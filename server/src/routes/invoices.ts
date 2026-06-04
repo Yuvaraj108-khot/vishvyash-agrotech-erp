@@ -608,7 +608,7 @@ router.get('/:id/pdf', authenticate, async (req: AuthRequest, res: Response): Pr
     res.download(pdfPath, `${invoice.invoiceNumber.replace(/\//g, '_')}.pdf`);
   } catch (error: any) {
     console.error('Download PDF error:', error);
-    res.status(500).json({ error: 'Failed to download PDF.', message: error.message || String(error), stack: error.stack });
+    res.status(500).json({ error: 'Failed to download PDF.' });
   }
 });
 

@@ -52,7 +52,7 @@ function ensureStorageDir() {
 export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   ensureStorageDir();
 
-  const logoPath = path.join(__dirname, '../../assets/logo.png');
+  const logoPath = path.join(__dirname, '../../../assets/logo.png');
   if (!fs.existsSync(logoPath)) {
     throw new Error('Required company logo (logo.png) is missing from assets directory.');
   }
@@ -95,7 +95,7 @@ export function getInvoiceHTML(data: InvoiceData): string {
   let logoBase64 = '';
   try {
     logoBase64 = fs.readFileSync(
-      path.join(__dirname, '../../assets/logo.png'),
+      path.join(__dirname, '../../../assets/logo.png'),
       'base64'
     );
   } catch (err) {
