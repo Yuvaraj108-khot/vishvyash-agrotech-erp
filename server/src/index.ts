@@ -74,20 +74,6 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/db-check', async (_req, res) => {
-  try {
-    const userCount = await prisma.user.count();
-    res.json({ status: 'connected', userCount });
-  } catch (error: any) {
-    res.status(500).json({
-      status: 'error',
-      message: error.message || 'Unknown database error',
-      stack: error.stack,
-      env_db_url_exists: !!process.env.DATABASE_URL
-    });
-  }
-});
-
 // Error handler
 app.use(errorHandler);
 
