@@ -8,9 +8,6 @@
     "start": "node dist/src/index.js",
     "seed": "tsx prisma/seed.ts"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.8.0",
     "archiver": "^7.0.1",
