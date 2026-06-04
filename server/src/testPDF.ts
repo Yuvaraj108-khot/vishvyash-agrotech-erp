@@ -108,7 +108,7 @@ async function captureInvoiceScreenshot(data: InvoiceData, filename: string) {
       deviceScaleFactor: 2 // High resolution
     });
 
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' as any });
 
     // Save screenshot
     const imagePath = path.join(ARTIFACTS_DIR, filename);

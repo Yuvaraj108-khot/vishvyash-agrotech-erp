@@ -6,7 +6,6 @@ import archiver from 'archiver';
 
 const router = Router();
 
-const DB_PATH = path.join(__dirname, '../../prisma/dev.db');
 const BACKUP_DIR = path.join(__dirname, '../../storage/backups');
 const PDF_DIR = path.join(__dirname, '../../storage/pdfs');
 
@@ -17,7 +16,7 @@ function ensureBackupDir() {
 }
 
 // POST /api/backup/create
-router.post('/create', authenticate, authorize('ADMIN'), async (_req: AuthRequest, res: Response): Promise<void> => {
+router.post('/create', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     ensureBackupDir();
 
@@ -30,12 +29,19 @@ router.post('/create', authenticate, authorize('ADMIN'), async (_req: AuthReques
     const backupName = `backup_${year}_${month}_${day}.zip`;
     const backupPath = path.join(BACKUP_DIR, backupName);
 
-    if (!fs.existsSync(DB_PATH)) {
-      res.status(500).json({ error: 'Source SQLite database not found.' });
-      return;
-    }
+    // Fetch all database records using Prisma
+    const dbData = {
+      users: await req.prisma!.user.findMany(),
+      clients: await req.prisma!.client.findMany(),
+      drivers: await req.prisma!.driver.findMany(),
+      vehicles: await req.prisma!.vehicle.findMany(),
+      invoices: await req.prisma!.invoice.findMany({ include: { items: true } }),
+      payments: await req.prisma!.payment.findMany(),
+      auditLogs: await req.prisma!.auditLog.findMany(),
+      settings: await req.prisma!.settings.findMany()
+    };
 
-    // Zip database file and pdf folder content
+    // Zip database JSON data and pdf folder content
     const output = fs.createWriteStream(backupPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
 
@@ -45,8 +51,8 @@ router.post('/create', authenticate, authorize('ADMIN'), async (_req: AuthReques
       
       archive.pipe(output);
 
-      // Add database file
-      archive.file(DB_PATH, { name: 'dev.db' });
+      // Append database JSON string as data.json
+      archive.append(JSON.stringify(dbData, null, 2), { name: 'data.json' });
 
       // Add PDFs directory if it exists
       if (fs.existsSync(PDF_DIR)) {
