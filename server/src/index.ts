@@ -74,6 +74,31 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/health-db', async (_req, res) => {
+  try {
+    const clientsCount = await prisma.client.count();
+    const rawResult = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT
+        c.id, c.name,
+        COUNT(i.id) as "invoiceCount",
+        COALESCE(SUM(i."grandTotal"), 0) as "totalAmount"
+      FROM clients c
+      LEFT JOIN invoices i ON i."clientId" = c.id AND i."isActive" = true AND i.status IN ('FINAL', 'PAID', 'PARTIAL', 'UNPAID')
+      WHERE c."isActive" = true
+      GROUP BY c.id, c.name
+      ORDER BY "totalAmount" DESC
+      LIMIT 5
+    `);
+    res.json({ status: 'ok', clientsCount, rawResult });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message || 'Unknown database error',
+      stack: error.stack
+    });
+  }
+});
+
 // Error handler
 app.use(errorHandler);
 
