@@ -12,29 +12,41 @@ const prisma = new PrismaClient();
 router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
+    console.log("1. Login request received for email:", email);
 
     if (!email || !password) {
+      console.log("Login failed: missing email or password");
       res.status(400).json({ error: 'Email and password are required.' });
       return;
     }
 
+    console.log("2. Querying database for user...");
     const user = await prisma.user.findUnique({ where: { email } });
+    console.log("3. User query result:", user ? `User found (ID: ${user.id}, Active: ${user.isActive})` : "User not found");
+
     if (!user || !user.isActive) {
+      console.log("Login failed: User not found or inactive");
       res.status(401).json({ error: 'Invalid email or password.' });
       return;
     }
 
+    console.log("4. Running bcrypt comparison...");
     const isValid = await bcrypt.compare(password, user.password);
+    console.log("5. Bcrypt comparison result:", isValid);
+
     if (!isValid) {
+      console.log("Login failed: Incorrect password");
       res.status(401).json({ error: 'Invalid email or password.' });
       return;
     }
 
+    console.log("6. Generating JWT token...");
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role, name: user.name },
       process.env.JWT_SECRET || 'fallback-secret',
       { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any }
     );
+    console.log("7. JWT token generated. Length:", token.length);
 
     res.json({
       token,
@@ -47,8 +59,12 @@ router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => 
       },
     });
   } catch (error: any) {
-    console.error('Login error details:', error);
-    res.status(500).json({ error: 'Login failed.' });
+    console.error('CRITICAL: Login route exception occurred:', error);
+    res.status(500).json({
+      error: 'Login failed.',
+      message: error.message || 'Unknown error',
+      stack: error.stack
+    });
   }
 });
 
