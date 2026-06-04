@@ -386,7 +386,7 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="pt-2">
                 <p className="text-muted-foreground mb-4 leading-normal">
-                  Create a full system snapshot. Each backup compiles the SQLite database file (`dev.db`) and all generated invoice PDF files into a single zip file.
+                  Create a full system snapshot. Each backup compiles the PostgreSQL database records (exported as data.json) and all generated invoice PDF files into a single zip file.
                 </p>
 
                 <div className="border rounded-xl overflow-hidden mt-4">
