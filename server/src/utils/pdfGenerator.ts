@@ -52,6 +52,11 @@ function ensureStorageDir() {
 export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   ensureStorageDir();
 
+  const logoPath = path.join(__dirname, '../../assets/logo.png');
+  if (!fs.existsSync(logoPath)) {
+    throw new Error('Required company logo (logo.png) is missing from assets directory.');
+  }
+
   const fileName = data.invoiceNumber.replace(/\//g, '_') + '.pdf';
   const filePath = path.join(STORAGE_DIR, fileName);
 
@@ -85,7 +90,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   }
 }
 
-function getInvoiceHTML(data: InvoiceData): string {
+export function getInvoiceHTML(data: InvoiceData): string {
   let logoBase64 = '';
   try {
     logoBase64 = fs.readFileSync(
@@ -93,98 +98,119 @@ function getInvoiceHTML(data: InvoiceData): string {
       'base64'
     );
   } catch (err) {
+    // Graceful error was already handled in generateInvoicePDF, but fallback just in case
     console.warn('Could not load logo.png from assets directory.');
   }
 
   const logoImg = logoBase64 
     ? `<img class="logo" src="data:image/png;base64,${logoBase64}" />` 
-    : `<div style="text-align:center; font-style:italic; margin-bottom: 20px;">[Logo Image Goes Here]</div>`;
+    : '';
 
-  const activeItems = data.items.map(item => `
-    <tr>
-      <td style="text-align: left;">${item.description}</td>
-      <td style="text-align: center;">${item.hsnCode}</td>
-      <td style="text-align: center;">${item.quantity.toFixed(3)} Ton</td>
-      <td style="text-align: center;">Rs. ${item.ratePerTon.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-      <td style="text-align: center;">Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-    </tr>
-  `).join('');
-
-  let taxRowsHTML = '';
-  if (data.igstRate > 0) {
-    taxRowsHTML = `
-      <tr>
-        <td rowspan="2"></td>
-        <td rowspan="2"></td>
-        <td rowspan="2"></td>
-        <td class="total-label">IGST @${data.igstRate}%</td>
-        <td style="text-align: center;">Rs. ${data.igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+  // Generate table rows (items + transport rows)
+  const rows: string[] = [];
+  data.items.forEach((item) => {
+    // Product row
+    rows.push(`
+      <tr class="item-row">
+        <td style="text-align: left;">${item.description}</td>
+        <td style="text-align: center;">${item.hsnCode || '-'}</td>
+        <td style="text-align: center;">${item.quantity.toFixed(3)} Ton</td>
+        <td style="text-align: right;">Rs. ${item.ratePerTon.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+        <td style="text-align: right;">Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       </tr>
-      <tr>
-        <td class="total-label grand-total-bg">Grand Total</td>
-        <td class="grand-total-bg" style="text-align: center;">
-          Rs. ${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </td>
+    `);
+
+    // Transport row if transport rate > 0
+    if (item.transportRate > 0) {
+      rows.push(`
+        <tr class="item-row transport-row">
+          <td style="text-align: left; font-style: italic; color: #555;">Transport Charges</td>
+          <td style="text-align: center;">-</td>
+          <td style="text-align: center;">${item.quantity.toFixed(3)} Ton</td>
+          <td style="text-align: right;">Rs. ${item.transportRate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+          <td style="text-align: right;">Rs. ${item.transportAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+        </tr>
+      `);
+    }
+  });
+
+  // Tax and Total Rows integrated into the table grid
+  let taxRows = '';
+  if (data.igstRate > 0) {
+    taxRows = `
+      <tr class="calculation-row">
+        <td colspan="3" class="no-border-left-bottom"></td>
+        <td class="calc-label">IGST @${data.igstRate}%</td>
+        <td class="calc-value">Rs. ${data.igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       </tr>
     `;
   } else {
-    taxRowsHTML = `
-      <tr>
-        <td rowspan="3"></td>
-        <td rowspan="3"></td>
-        <td rowspan="3"></td>
-        <td class="total-label">CGST @${data.cgstRate}%</td>
-        <td style="text-align: center;">Rs. ${data.cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+    taxRows = `
+      <tr class="calculation-row">
+        <td colspan="3" class="no-border-left-bottom"></td>
+        <td class="calc-label">CGST @${data.cgstRate}%</td>
+        <td class="calc-value">Rs. ${data.cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       </tr>
-      <tr>
-        <td class="total-label">SGST @${data.sgstRate}%</td>
-        <td style="text-align: center;">Rs. ${data.sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-      </tr>
-      <tr>
-        <td class="total-label grand-total-bg">Grand Total</td>
-        <td class="grand-total-bg" style="text-align: center;">
-            Rs. ${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </td>
+      <tr class="calculation-row">
+        <td colspan="3" class="no-border-left-bottom"></td>
+        <td class="calc-label">SGST @${data.sgstRate}%</td>
+        <td class="calc-value">Rs. ${data.sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
       </tr>
     `;
   }
 
-  let buyerHtml = '';
+  const grandTotalRow = `
+    <tr class="grand-total-row">
+      <td colspan="3" class="no-border-left-bottom"></td>
+      <td class="calc-label bold">Grand Total</td>
+      <td class="calc-value bold">Rs. ${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+    </tr>
+  `;
+
+  // Buyer / Consignee Layout
+  let buyerConsigneeSection = '';
   if (data.templateType === 'B') {
-    buyerHtml = `
-      <table class="split-buyer-table">
+    buyerConsigneeSection = `
+      <table class="buyer-consignee-table">
         <tr>
-          <td>
-            <div class="buyer-title">Buyer (Bill To)</div>
-            <div class="buyer-text">${data.buyerName}</div>
-            <div class="buyer-text">${data.buyerAddress}</div>
-            <div class="buyer-text">
-              <b>GSTIN:</b> ${data.buyerGst || '-'}
+          <td class="buyer-col">
+            <div class="section-title">Buyer (Bill To)</div>
+            <div class="party-name">${data.buyerName}</div>
+            <div class="party-details">
+              Address: ${data.buyerAddress}<br/>
+              State: ${data.buyerState} (Code: ${data.buyerStateCode})<br/>
+              <b>GSTIN:</b> ${data.buyerGst || '-'}<br/>
+              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : ''}
             </div>
-            ${data.buyerCin ? `<div class="buyer-text"><b>CIN No:</b> ${data.buyerCin}</div>` : ''}
           </td>
-          <td>
-            <div class="buyer-title">Consignee (Ship To)</div>
-            <div class="buyer-text">${data.consigneeName || '-'}</div>
-            <div class="buyer-text">${data.consigneeAddress || '-'}</div>
-            <div class="buyer-text">
-              <b>GSTIN:</b> ${data.consigneeGst || '-'}
+          <td class="consignee-col">
+            <div class="section-title">Consignee (Ship To)</div>
+            <div class="party-name">${data.consigneeName || '-'}</div>
+            <div class="party-details">
+              Address: ${data.consigneeAddress || '-'}<br/>
+              State: ${data.consigneeState || 'Maharashtra'} (Code: ${data.consigneeStateCode || '27'})<br/>
+              <b>GSTIN:</b> ${data.consigneeGst || '-'}<br/>
             </div>
           </td>
         </tr>
       </table>
     `;
   } else {
-    buyerHtml = `
-      <div class="single-buyer-box">
-        <div class="buyer-title">Buyer (Bill To)</div>
-        <div class="buyer-text">${data.buyerName}</div>
-        <div class="buyer-text">${data.buyerAddress}</div>
-        <div class="buyer-text">
-          <b>GSTIN:</b> ${data.buyerGst || '-'}
-        </div>
-        ${data.buyerCin ? `<div class="buyer-text"><b>CIN No:</b> ${data.buyerCin}</div>` : ''}
-      </div>
+    buyerConsigneeSection = `
+      <table class="buyer-consignee-table">
+        <tr>
+          <td class="buyer-col" style="width: 100%; border-right: none;">
+            <div class="section-title">Buyer (Bill To)</div>
+            <div class="party-name">${data.buyerName}</div>
+            <div class="party-details">
+              Address: ${data.buyerAddress}<br/>
+              State: ${data.buyerState} (Code: ${data.buyerStateCode})<br/>
+              <b>GSTIN:</b> ${data.buyerGst || '-'}<br/>
+              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : ''}
+            </div>
+          </td>
+        </tr>
+      </table>
     `;
   }
 
@@ -193,11 +219,11 @@ function getInvoiceHTML(data: InvoiceData): string {
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Invoice</title>
+      <title>Tax Invoice</title>
       <style>
         @page {
           size: A4;
-          margin: 12mm;
+          margin: 10mm;
         }
 
         * {
@@ -208,254 +234,302 @@ function getInvoiceHTML(data: InvoiceData): string {
 
         body {
           font-family: Arial, Helvetica, sans-serif;
-          color: #111;
+          color: #000;
           background: #fff;
+          font-size: 11px;
+          line-height: 1.4;
+          padding: 5px;
         }
 
+        .invoice-container {
+          border: 1px solid #777;
+          width: 100%;
+          padding: 15px;
+          border-radius: 4px;
+        }
+
+        /* Header Layout: Centered Logo and Text */
         .header {
-           text-align: center;
-           margin-bottom: 10px;
+          text-align: center;
+          margin-bottom: 12px;
         }
 
         .logo {
-          width: 140px;
-          height: auto;
+          max-width: 100px;
+          max-height: 80px;
           display: block;
-          margin: 0 auto 5px;
+          margin: 0 auto 8px;
         }
 
         .company-name {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: bold;
           color: #006400;
+          text-transform: uppercase;
+          margin-bottom: 4px;
           letter-spacing: 0.5px;
-          margin-bottom: 4px;
         }
 
-        .subtitle {
-          font-size: 13px;
-          margin-bottom: 4px;
-          color: #333;
-        }
-
-        .address {
+        .company-subtitle {
           font-size: 11px;
+          color: #333;
           margin-bottom: 4px;
+        }
+
+        .company-info {
+          font-size: 11px;
+          line-height: 1.4;
+          color: #222;
+        }
+
+        .green-divider {
+          height: 2px;
+          background-color: #006400;
+          margin: 10px 0;
+        }
+
+        /* Title Bar */
+        .title-bar {
+          background-color: #006400;
+          color: #fff;
+          text-align: center;
+          font-weight: bold;
+          font-size: 14px;
+          padding: 6px 0;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 12px;
+          border-radius: 2px;
+        }
+
+        /* Metadata table */
+        .metadata-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 12px;
+          border: 1px solid #ccc;
+        }
+
+        .metadata-table td {
+          padding: 6px 10px;
+          border: 1px solid #ccc;
+          width: 25%;
+        }
+
+        .meta-label {
+          font-weight: bold;
           color: #333;
         }
 
-        .gst {
-          font-size: 12px;
-          font-weight: bold;
+        .meta-value {
+          color: #000;
         }
 
-        .green-line {
-          height: 3px;
-          background-color: #006400;
-          margin: 10px 0 15px 0;
-        }
-
-        .tax-invoice-wrapper {
-          border: 1px solid #444;
-          margin-bottom: 15px;
-        }
-
-        .tax-bar {
-          background: #006400;
-          color: white;
-          text-align: center;
-          padding: 6px;
-          font-size: 16px;
-          font-weight: bold;
-        }
-
-        .info-table {
+        /* Buyer / Consignee table */
+        .buyer-consignee-table {
           width: 100%;
           border-collapse: collapse;
+          margin-bottom: 12px;
+          border: 1px solid #ccc;
         }
 
-        .info-table td {
-          border-top: 1px solid #444;
-          border-right: 1px solid #444;
-          padding: 8px 10px;
-          font-size: 12px;
-        }
-
-        .info-table td:last-child {
-          border-right: none;
-        }
-
-        .label {
-          font-weight: bold;
-          background: #f9f9f9;
-          width: 15%;
-        }
-
-        /* Buyer Tables */
-        .split-buyer-table {
-          width: 100%;
-          border-collapse: collapse;
-          border: 1px solid #444;
-          margin-bottom: 15px;
-        }
-        .split-buyer-table td {
-          width: 50%;
-          padding: 10px;
+        .buyer-consignee-table td {
+          padding: 10px 12px;
           vertical-align: top;
-          border-right: 1px solid #444;
+          border: 1px solid #ccc;
         }
-        .split-buyer-table td:last-child {
-          border-right: none;
+
+        .buyer-col {
+          width: 50%;
         }
-        .single-buyer-box {
-          border: 1px solid #444;
-          padding: 10px;
-          margin-bottom: 15px;
+
+        .consignee-col {
+          width: 50%;
         }
-        .buyer-title {
-          font-size: 13px;
+
+        .section-title {
           font-weight: bold;
+          font-size: 12px;
+          text-decoration: underline;
           margin-bottom: 6px;
         }
-        .buyer-text {
+
+        .party-name {
+          font-weight: bold;
           font-size: 12px;
           margin-bottom: 4px;
+          text-transform: uppercase;
         }
 
-        /* Product table */
+        .party-details {
+          line-height: 1.4;
+          font-size: 11px;
+        }
+
+        /* Product/Items table */
         .product-table {
           width: 100%;
           border-collapse: collapse;
-          border: 1px solid #444;
-          margin-bottom: 15px;
+          border: 1px solid #ccc;
+          margin-bottom: 12px;
         }
 
         .product-table th {
-          background: #006400;
-          color: white;
-          border-right: 1px solid #444;
-          border-bottom: 1px solid #444;
-          padding: 8px 10px;
-          font-size: 13px;
-        }
-        .product-table th:last-child {
-          border-right: none;
-        }
-
-        .product-table td {
-          border-right: 1px solid #444;
-          border-bottom: 1px solid #444;
-          padding: 8px 10px;
-          font-size: 12px;
-        }
-        .product-table td:last-child {
-          border-right: none;
-        }
-
-        .product-table tr:last-child td {
-          border-bottom: none;
-        }
-
-        .empty-row td {
-          height: 50px;
-        }
-
-        .total-label {
+          background-color: #006400;
+          color: #fff;
           font-weight: bold;
+          padding: 8px 10px;
+          border: 1px solid #ccc;
+          font-size: 11px;
           text-align: center;
         }
 
-        .grand-total-bg {
-          background: #eef5ee;
-          font-weight: bold;
+        .product-table td {
+          padding: 8px 10px;
+          border: 1px solid #ccc;
+          font-size: 11px;
+          vertical-align: middle;
         }
 
-        .amount-box {
-          border: 1px solid #444;
-          padding: 10px;
-          font-size: 12px;
-          margin-bottom: 40px;
+        .item-row td {
+          font-weight: normal;
         }
 
-        .signature {
+        .blank-row td {
+          height: 35px;
+        }
+
+        /* Calculation / Tax rows integration */
+        .calculation-row td {
+          padding: 6px 10px;
+        }
+
+        .no-border-left-bottom {
+          border-left: none !important;
+          border-bottom: none !important;
+        }
+
+        .calc-label {
           text-align: right;
-          padding-right: 10px;
-          font-size: 13px;
+          font-weight: normal;
+          border: 1px solid #ccc;
+          background-color: #fafafa;
+        }
+
+        .calc-value {
+          text-align: right;
+          border: 1px solid #ccc;
+        }
+
+        .grand-total-row td {
+          background-color: #f5f5f5;
+          padding: 8px 10px;
+        }
+
+        .bold {
+          font-weight: bold !important;
+        }
+
+        /* Amount in Words box */
+        .amount-in-words-box {
+          border: 1px solid #ccc;
+          padding: 8px 10px;
+          font-size: 11px;
+          margin-bottom: 25px;
+          border-radius: 2px;
+        }
+
+        /* Signatory Section */
+        .signatory-container {
+          width: 100%;
+          margin-top: 15px;
+        }
+
+        .signatory-box {
+          float: right;
+          text-align: right;
+          font-size: 11px;
+        }
+
+        .signatory-title {
           font-weight: bold;
+          margin-bottom: 45px;
         }
       </style>
     </head>
     <body>
 
-      <div class="header">
-         ${logoImg}
+      <div class="invoice-container">
+        <!-- Header -->
+        <div class="header">
+          ${logoImg}
+          <div class="company-name">Vishvyash Agrotech Energy</div>
+          <div class="company-subtitle">Biomass Briquettes Manufacturer & Supplier</div>
+          <div class="company-info">
+            Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra &ndash; 416101<br/>
+            <b>GST No.:</b> 27GHYPM9702C1Z5
+          </div>
+        </div>
 
-         <div class="company-name">
-            VISHVYASH AGROTECH ENERGY
-         </div>
+        <div class="green-divider"></div>
 
-         <div class="subtitle">
-            Biomass Briquettes Manufacturer & Supplier
-         </div>
+        <!-- Title -->
+        <div class="title-bar">Tax Invoice</div>
 
-         <div class="address">
-            Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra &ndash; 416101
-         </div>
-
-         <div class="gst">
-            GST No.: 27GHYPM9702C1Z5
-         </div>
-      </div>
-
-      <div class="green-line"></div>
-
-      <div class="tax-invoice-wrapper">
-        <div class="tax-bar">TAX INVOICE</div>
-
-        <table class="info-table">
+        <!-- Metadata Grid -->
+        <table class="metadata-table">
           <tr>
-            <td class="label">Invoice No.</td>
-            <td>${data.invoiceNumber}</td>
-            <td class="label">Invoice Date</td>
-            <td>${data.invoiceDate}</td>
+            <td class="meta-label">Invoice No.</td>
+            <td class="meta-value">${data.invoiceNumber}</td>
+            <td class="meta-label">Invoice Date</td>
+            <td class="meta-value">${data.invoiceDate}</td>
           </tr>
           <tr>
-            <td class="label">Vehicle No.</td>
-            <td>${data.vehicleNumber || '-'}</td>
-            <td class="label">Transport</td>
-            <td>${data.transportType || 'Truck'}</td>
+            <td class="meta-label">Vehicle No.</td>
+            <td class="meta-value">${data.vehicleNumber || '-'}</td>
+            <td class="meta-label">Transport</td>
+            <td class="meta-value">${data.transportType || 'Truck'}</td>
           </tr>
         </table>
-      </div>
 
-      ${buyerHtml}
+        <!-- Buyer & Consignee -->
+        ${buyerConsigneeSection}
 
-      <table class="product-table">
-        <thead>
-          <tr>
-            <th style="width: 35%; text-align: left;">Product</th>
-            <th style="text-align: center;">HSN Code</th>
-            <th style="text-align: center;">Qty</th>
-            <th style="text-align: center;">Rate/Ton</th>
-            <th style="text-align: center;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${activeItems}
-          ${taxRowsHTML}
-        </tbody>
-      </table>
+        <!-- Product Table -->
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th style="width: 45%; text-align: left;">Product</th>
+              <th style="width: 12%;">HSN Code</th>
+              <th style="width: 13%;">Qty</th>
+              <th style="width: 15%; text-align: right;">Rate/Ton</th>
+              <th style="width: 15%; text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.join('')}
+            ${taxRows}
+            ${grandTotalRow}
+          </tbody>
+        </table>
 
-      <div class="amount-box">
-        <b>Amount in Words:</b> ${data.amountInWords}
-      </div>
+        <!-- Amount in Words -->
+        <div class="amount-in-words-box">
+          <b>Amount in Words:</b> ${data.amountInWords}
+        </div>
 
-      <div class="signature">
-        <div>Authorized Signatory</div>
-        <div style="font-size: 11px; font-weight: normal; margin-top: 5px;">For Vishvyash Agrotech Energy</div>
+        <!-- Signatory -->
+        <div class="signatory-container">
+          <div class="signatory-box">
+            <div class="signatory-title">Authorized Signatory</div>
+            <div>For Vishvyash Agrotech Energy</div>
+          </div>
+          <div style="clear: both;"></div>
+        </div>
       </div>
 
     </body>
     </html>
   `;
 }
+

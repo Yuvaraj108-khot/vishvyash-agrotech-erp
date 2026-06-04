@@ -141,3 +141,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Application storage & database files
+server/storage/
+server/prisma/*.db
+server/prisma/*.db-journal
+*.db
+*.db-journal
