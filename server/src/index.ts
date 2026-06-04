@@ -20,6 +20,17 @@ import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
+// Sanitize DATABASE_URL if it has surrounding quotes
+if (process.env.DATABASE_URL) {
+  let dbUrl = process.env.DATABASE_URL.trim();
+  if ((dbUrl.startsWith('"') && dbUrl.endsWith('"')) || (dbUrl.startsWith("'") && dbUrl.endsWith("'"))) {
+    dbUrl = dbUrl.slice(1, -1);
+  }
+  process.env.DATABASE_URL = dbUrl;
+}
+
+console.log("DATABASE_URL starts with:", process.env.DATABASE_URL?.slice(0, 20));
+
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 4000;
