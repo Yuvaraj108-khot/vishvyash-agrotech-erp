@@ -557,7 +557,6 @@ export default function InvoiceCreatePage() {
                       <th className="py-2 px-2 w-20">HSN</th>
                       <th className="py-2 px-2 w-24">Qty (Tons)</th>
                       <th className="py-2 px-2 w-32">Rate/Ton</th>
-                      <th className="py-2 px-2 w-28">Transport / Ton</th>
                       <th className="py-2 pl-2 text-right w-24">Subtotal</th>
                       <th className="py-2 pl-2 w-10"></th>
                     </tr>
@@ -565,7 +564,7 @@ export default function InvoiceCreatePage() {
                   <tbody className="divide-y">
                     {items.map((item, idx) => {
                       const itemSubtotal = item.quantity * item.ratePerTon;
-                      const itemTransport = item.quantity * item.transportRate;
+                      const itemTransport = 0;
                       const itemTotal = itemSubtotal + itemTransport;
 
                       return (
@@ -614,15 +613,6 @@ export default function InvoiceCreatePage() {
                                 ))}
                               </div>
                             )}
-                          </td>
-                          <td className="py-3 px-2">
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={item.transportRate || ''}
-                              onChange={(e) => handleItemChange(idx, 'transportRate', e.target.value)}
-                              placeholder="₹0"
-                            />
                           </td>
                           <td className="py-3 pl-2 text-right font-bold text-foreground">
                             ₹{itemTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}

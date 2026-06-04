@@ -538,7 +538,6 @@ export default function InvoicesPage() {
                       <th className="p-2 text-center" style={{ width: '80px' }}>HSN</th>
                       <th className="p-2 text-right" style={{ width: '95px' }}>Quantity</th>
                       <th className="p-2 text-right" style={{ width: '100px' }}>Rate / Ton</th>
-                      <th className="p-2 text-right" style={{ width: '100px' }}>Transport / Ton</th>
                       <th className="p-2 text-right" style={{ width: '110px' }}>Subtotal</th>
                     </tr>
                   </thead>
@@ -549,7 +548,6 @@ export default function InvoicesPage() {
                         <td className="p-2 text-center font-mono">{item.hsnCode}</td>
                         <td className="p-2 text-right font-medium">{item.quantity.toFixed(3)} Ton</td>
                         <td className="p-2 text-right">₹{item.ratePerTon.toLocaleString('en-IN')}</td>
-                        <td className="p-2 text-right">₹{item.transportRate.toLocaleString('en-IN')}</td>
                         <td className="p-2 text-right font-bold text-foreground">₹{item.totalAmount.toLocaleString('en-IN')}</td>
                       </tr>
                     ))}
@@ -576,10 +574,6 @@ export default function InvoicesPage() {
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal:</span>
                     <span>₹{selectedDetails.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Transport Cost:</span>
-                    <span>₹{selectedDetails.transportTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between text-foreground border-b pb-1 font-semibold">
                     <span>Taxable Amount:</span>
