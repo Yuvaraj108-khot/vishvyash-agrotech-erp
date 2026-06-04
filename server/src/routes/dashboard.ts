@@ -92,13 +92,13 @@ router.get('/', authenticate, async (_req: AuthRequest, res: Response): Promise<
       prisma.$queryRawUnsafe<any[]>(`
         SELECT
           c.id, c.name,
-          COUNT(i.id) as invoiceCount,
-          COALESCE(SUM(i.grandTotal), 0) as totalAmount
+          COUNT(i.id) as "invoiceCount",
+          COALESCE(SUM(i."grandTotal"), 0) as "totalAmount"
         FROM clients c
-        LEFT JOIN invoices i ON i.clientId = c.id AND i.isActive = true AND i.status IN ('FINAL', 'PAID', 'PARTIAL', 'UNPAID')
-        WHERE c.isActive = true
+        LEFT JOIN invoices i ON i."clientId" = c.id AND i."isActive" = true AND i.status IN ('FINAL', 'PAID', 'PARTIAL', 'UNPAID')
+        WHERE c."isActive" = true
         GROUP BY c.id, c.name
-        ORDER BY totalAmount DESC
+        ORDER BY "totalAmount" DESC
         LIMIT 5
       `),
     ]);
@@ -155,7 +155,7 @@ router.get('/', authenticate, async (_req: AuthRequest, res: Response): Promise<
     });
   } catch (error: any) {
     console.error('Dashboard error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard data.' });
+    res.status(500).json({ error: 'Failed to fetch dashboard data.', message: error.message || String(error), stack: error.stack });
   }
 });
 
