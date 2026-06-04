@@ -102,7 +102,6 @@ async function captureInvoiceScreenshot(data: InvoiceData, filename: string) {
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
       '--disable-gpu',
-      '--single-process',
       '--no-zygote'
     ]
   });
