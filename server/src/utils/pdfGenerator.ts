@@ -52,9 +52,19 @@ function ensureStorageDir() {
 export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   ensureStorageDir();
 
-  const logoPath = path.join(__dirname, '../../../assets/logo.png');
+  let logoPath = path.join(__dirname, '../../assets/logo.png'); // Development / tsx
   if (!fs.existsSync(logoPath)) {
-    throw new Error('Required company logo (logo.png) is missing from assets directory.');
+    logoPath = path.join(__dirname, '../../../assets/logo.png'); // Compiled production (dist)
+  }
+  if (!fs.existsSync(logoPath)) {
+    logoPath = path.join(process.cwd(), 'assets/logo.png'); // Current working directory fallback
+  }
+
+  if (!fs.existsSync(logoPath)) {
+    throw new Error(`Required company logo (logo.png) is missing. Searched paths:
+1. ${path.join(__dirname, '../../assets/logo.png')}
+2. ${path.join(__dirname, '../../../assets/logo.png')}
+3. ${path.join(process.cwd(), 'assets/logo.png')}`);
   }
 
   const fileName = data.invoiceNumber.replace(/\//g, '_') + '.pdf';
@@ -94,10 +104,14 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
 export function getInvoiceHTML(data: InvoiceData): string {
   let logoBase64 = '';
   try {
-    logoBase64 = fs.readFileSync(
-      path.join(__dirname, '../../../assets/logo.png'),
-      'base64'
-    );
+    let logoPath = path.join(__dirname, '../../assets/logo.png'); // Development
+    if (!fs.existsSync(logoPath)) {
+      logoPath = path.join(__dirname, '../../../assets/logo.png'); // Production (dist)
+    }
+    if (!fs.existsSync(logoPath)) {
+      logoPath = path.join(process.cwd(), 'assets/logo.png'); // Fallback
+    }
+    logoBase64 = fs.readFileSync(logoPath, 'base64');
   } catch (err) {
     // Graceful error was already handled in generateInvoicePDF, but fallback just in case
     console.warn('Could not load logo.png from assets directory.');
