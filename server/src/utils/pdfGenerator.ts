@@ -61,6 +61,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   const filePath = path.join(STORAGE_DIR, fileName);
 
   const browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });

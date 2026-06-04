@@ -1,18 +1,17 @@
-FROM node:18-slim
+FROM node:22-bookworm-slim
 
-# Install necessary libraries for Puppeteer/Chromium
+# Set environment variable to skip Puppeteer downloading its own Chromium during npm install
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Install Chromium and system fonts required for PDF generation
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    ca-certificates \
-    procps \
+    chromium \
+    fonts-liberation \
+    libnss3 \
     libxss1 \
     libasound2 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    libnss3 \
-    libxshmfence1 \
-    libgbm1 \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
