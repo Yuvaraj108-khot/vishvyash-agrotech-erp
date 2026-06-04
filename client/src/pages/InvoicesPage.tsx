@@ -378,9 +378,9 @@ export default function InvoicesPage() {
                               </Button>
                             )}
 
-                            {isAdmin && inv.status !== 'CANCELLED' && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:text-rose-700" title="Cancel Invoice" onClick={() => openCancelDialog(inv)}>
-                                <Ban className="h-4 w-4" />
+                            {inv.status !== 'CANCELLED' && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:text-rose-700" title="Delete Invoice" onClick={() => openCancelDialog(inv)}>
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
                           </div>

@@ -510,7 +510,7 @@ router.put('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, re
 });
 
 // POST /api/invoices/:id/cancel
-router.post('/:id/cancel', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/:id/cancel', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const invoice = await prisma.invoice.delete({
       where: { id: req.params.id as string },
@@ -533,7 +533,7 @@ router.post('/:id/cancel', authenticate, authorize('ADMIN'), async (req: AuthReq
 });
 
 // DELETE /api/invoices/:id
-router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     await prisma.invoice.delete({
       where: { id: req.params.id as string },
