@@ -155,7 +155,7 @@ router.get('/', authenticate, async (_req: AuthRequest, res: Response): Promise<
     });
   } catch (error: any) {
     console.error('Dashboard error:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard data.', message: error.message || String(error), stack: error.stack });
+    res.status(500).json({ error: 'Failed to fetch dashboard data.' });
   }
 });
 
