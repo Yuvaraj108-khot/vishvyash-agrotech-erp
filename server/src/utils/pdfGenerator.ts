@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
+import PDFDocument from 'pdfkit';
 
 export interface InvoiceData {
   invoiceNumber: string;
@@ -52,60 +53,181 @@ function ensureStorageDir() {
 export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   ensureStorageDir();
 
-  let logoPath = path.join(__dirname, '../../assets/logo.png'); // Development / tsx
-  if (!fs.existsSync(logoPath)) {
-    logoPath = path.join(__dirname, '../../../assets/logo.png'); // Compiled production (dist)
-  }
-  if (!fs.existsSync(logoPath)) {
-    logoPath = path.join(process.cwd(), 'assets/logo.png'); // Current working directory fallback
-  }
-
-  if (!fs.existsSync(logoPath)) {
-    throw new Error(`Required company logo (logo.png) is missing. Searched paths:
-1. ${path.join(__dirname, '../../assets/logo.png')}
-2. ${path.join(__dirname, '../../../assets/logo.png')}
-3. ${path.join(process.cwd(), 'assets/logo.png')}`);
-  }
-
   const fileName = data.invoiceNumber.replace(/\//g, '_') + '.pdf';
   const filePath = path.join(STORAGE_DIR, fileName);
 
-  const browser = await puppeteer.launch({
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--no-zygote'
-    ]
-  });
-
   try {
-    const page = await browser.newPage();
-    const htmlContent = getInvoiceHTML(data);
-    
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' as any });
-    
-    await page.pdf({
-      path: filePath,
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-      margin: {
-        top: '0',
-        right: '0',
-        bottom: '0',
-        left: '0'
-      }
+    const browser = await puppeteer.launch({
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-zygote'
+      ]
     });
 
-    return filePath;
-  } finally {
-    await browser.close();
+    try {
+      const page = await browser.newPage();
+      const htmlContent = getInvoiceHTML(data);
+      
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' as any });
+      
+      await page.pdf({
+        path: filePath,
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+        margin: {
+          top: '0',
+          right: '0',
+          bottom: '0',
+          left: '0'
+        }
+      });
+
+      return filePath;
+    } finally {
+      await browser.close();
+    }
+  } catch (puppeteerError) {
+    console.warn('Puppeteer PDF generation failed. Falling back to native PDFKit:', puppeteerError);
+    try {
+      await generateInvoicePDFWithPDFKit(data, filePath);
+      return filePath;
+    } catch (pdfkitError) {
+      console.error('PDFKit fallback generation also failed:', pdfkitError);
+      throw pdfkitError;
+    }
   }
 }
+
+function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 40 });
+      const stream = fs.createWriteStream(filePath);
+      doc.pipe(stream);
+
+      // Header - Company Name
+      doc.fillColor('#006400').fontSize(22).font('Helvetica-Bold').text('Vishvyash Agrotech Energy', { align: 'center' });
+      doc.fillColor('#333333').fontSize(10).font('Helvetica-Oblique').text('Biomass Briquettes Manufacturer & Supplier', { align: 'center' });
+      doc.fontSize(8).font('Helvetica').text('Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra - 416101', { align: 'center' });
+      doc.font('Helvetica-Bold').text('GST No: 27GHYPM9702C1Z5', { align: 'center' });
+      doc.moveDown(1);
+
+      // Divider Line
+      doc.strokeColor('#006400').lineWidth(2).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
+      doc.moveDown(0.5);
+
+      // Title Bar
+      doc.fillColor('#006400').rect(40, doc.y, 515, 20).fill();
+      doc.fillColor('#FFFFFF').fontSize(11).font('Helvetica-Bold').text('TAX INVOICE', 40, doc.y + 5, { align: 'center' });
+      doc.fillColor('#000000').moveDown(1.5);
+
+      // Metadata Info
+      const startY = doc.y;
+      doc.fontSize(9).font('Helvetica-Bold').text('Invoice No: ', 45, startY);
+      doc.font('Helvetica').text(data.invoiceNumber, 110, startY);
+      doc.font('Helvetica-Bold').text('Invoice Date: ', 300, startY);
+      doc.font('Helvetica').text(data.invoiceDate, 370, startY);
+
+      doc.moveDown(0.5);
+      const nextY = doc.y;
+      doc.font('Helvetica-Bold').text('Vehicle No: ', 45, nextY);
+      doc.font('Helvetica').text(data.vehicleNumber || '-', 110, nextY);
+      doc.font('Helvetica-Bold').text('Transport: ', 300, nextY);
+      doc.font('Helvetica').text(data.transportType || 'By Road', 370, nextY);
+      doc.moveDown(1);
+
+      // Buyer Box
+      doc.strokeColor('#CCCCCC').lineWidth(1).rect(40, doc.y, 515, 75).stroke();
+      const buyerY = doc.y + 8;
+      doc.fontSize(10).font('Helvetica-Bold').text('Buyer (Bill To):', 50, buyerY);
+      doc.fontSize(10).font('Helvetica-Bold').text(data.buyerName, 50, buyerY + 14);
+      doc.fontSize(8).font('Helvetica').text(`Address: ${data.buyerAddress}`, 50, buyerY + 28, { width: 495 });
+      doc.text(`State: ${data.buyerState} (Code: ${data.buyerStateCode})    GSTIN: ${data.buyerGst || '-'}`, 50, buyerY + 52);
+      
+      doc.y = buyerY + 75;
+      doc.moveDown(1);
+
+      // Items Table Header
+      const tableY = doc.y;
+      doc.fillColor('#006400').rect(40, tableY, 515, 18).fill();
+      doc.fillColor('#FFFFFF').fontSize(9).font('Helvetica-Bold');
+      doc.text('Product Description', 45, tableY + 5, { width: 200 });
+      doc.text('HSN', 250, tableY + 5, { width: 50, align: 'center' });
+      doc.text('Qty', 310, tableY + 5, { width: 60, align: 'right' });
+      doc.text('Rate/Ton', 380, tableY + 5, { width: 70, align: 'right' });
+      doc.text('Amount', 460, tableY + 5, { width: 90, align: 'right' });
+
+      doc.fillColor('#000000').font('Helvetica');
+      let currentY = tableY + 18;
+
+      data.items.forEach((item) => {
+        // Draw item row
+        doc.text(item.description, 45, currentY + 5, { width: 200 });
+        doc.text(item.hsnCode || '-', 250, currentY + 5, { width: 50, align: 'center' });
+        doc.text(`${item.quantity.toFixed(3)} MT`, 310, currentY + 5, { width: 60, align: 'right' });
+        doc.text(`Rs. ${item.ratePerTon.toFixed(2)}`, 380, currentY + 5, { width: 70, align: 'right' });
+        doc.text(`Rs. ${item.amount.toFixed(2)}`, 460, currentY + 5, { width: 90, align: 'right' });
+        
+        currentY += 18;
+        doc.strokeColor('#EEEEEE').lineWidth(0.5).moveTo(40, currentY).lineTo(555, currentY).stroke();
+
+        // Draw transport row if applicable
+        if (item.transportRate > 0) {
+          doc.font('Helvetica-Oblique').text('Transport Charges', 45, currentY + 5, { width: 200 });
+          doc.font('Helvetica').text('-', 250, currentY + 5, { width: 50, align: 'center' });
+          doc.text(`${item.quantity.toFixed(3)} MT`, 310, currentY + 5, { width: 60, align: 'right' });
+          doc.text(`Rs. ${item.transportRate.toFixed(2)}`, 380, currentY + 5, { width: 70, align: 'right' });
+          doc.text(`Rs. ${item.transportAmount.toFixed(2)}`, 460, currentY + 5, { width: 90, align: 'right' });
+          currentY += 18;
+          doc.strokeColor('#EEEEEE').lineWidth(0.5).moveTo(40, currentY).lineTo(555, currentY).stroke();
+        }
+      });
+
+      // Total details
+      currentY += 10;
+      doc.fontSize(9).font('Helvetica-Bold');
+      
+      const drawTotalRow = (label: string, val: string) => {
+        doc.text(label, 300, currentY, { width: 140, align: 'right' });
+        doc.text(val, 450, currentY, { width: 100, align: 'right' });
+        currentY += 14;
+      };
+
+      drawTotalRow('Subtotal:', `Rs. ${data.subtotal.toFixed(2)}`);
+      drawTotalRow('Taxable Amount:', `Rs. ${data.taxableAmount.toFixed(2)}`);
+
+      if (data.igstRate > 0) {
+        drawTotalRow(`IGST @${data.igstRate}%:`, `Rs. ${data.igstAmount.toFixed(2)}`);
+      } else {
+        drawTotalRow(`CGST @${data.cgstRate}%:`, `Rs. ${data.cgstAmount.toFixed(2)}`);
+        drawTotalRow(`SGST @${data.sgstRate}%:`, `Rs. ${data.sgstAmount.toFixed(2)}`);
+      }
+
+      doc.fontSize(11).font('Helvetica-Bold');
+      drawTotalRow('Grand Total:', `Rs. ${data.grandTotal.toFixed(2)}`);
+
+      doc.fontSize(8).font('Helvetica-Oblique').text(`Amount in Words: ${data.amountInWords}`, 45, currentY + 10, { width: 500 });
+
+      // Signatory Box
+      const sigY = currentY + 50;
+      doc.fontSize(9).font('Helvetica-Bold').text('Authorized Signatory', 380, sigY, { width: 170, align: 'right' });
+      doc.fontSize(8).font('Helvetica').text('For Vishvyash Agrotech Energy', 380, sigY + 12, { width: 170, align: 'right' });
+
+      doc.end();
+      stream.on('finish', () => resolve());
+      stream.on('error', (err) => reject(err));
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 
 export function getInvoiceHTML(data: InvoiceData): string {
   let logoBase64 = '';
