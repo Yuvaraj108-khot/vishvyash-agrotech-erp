@@ -4,9 +4,25 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { sendOTPEmail } from '../utils/email';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+router.get('/debug-code', async (_req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const code = fs.readFileSync(path.join(__dirname, '../utils/pdfGenerator.ts'), 'utf8');
+    res.type('text/plain').send(code);
+  } catch (err: any) {
+    try {
+      const compiledCode = fs.readFileSync(path.join(__dirname, '../utils/pdfGenerator.js'), 'utf8');
+      res.type('text/plain').send(compiledCode);
+    } catch (jsErr: any) {
+      res.status(500).send(`TS Err: ${err.message}. JS Err: ${jsErr.message}`);
+    }
+  }
+});
 
 // POST /api/auth/login
 router.post('/login', async (req: AuthRequest, res: Response): Promise<void> => {
