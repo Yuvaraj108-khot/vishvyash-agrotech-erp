@@ -562,46 +562,47 @@ router.get('/:id/pdf', authenticate, async (req: AuthRequest, res: Response): Pr
       return;
     }
 
-    let pdfPath = invoice.pdfPath;
-    if (!pdfPath || !fs.existsSync(pdfPath)) {
-      pdfPath = await generateInvoicePDF({
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: formatDate(invoice.invoiceDate),
-        transportType: invoice.transportType || 'By Road',
-        vehicleNumber: invoice.vehicle?.vehicleNumber || '-',
-        buyerName: invoice.buyerName,
-        buyerGst: invoice.buyerGst || '',
-        buyerCin: invoice.buyerCin || '',
-        buyerAddress: invoice.buyerAddress || '',
-        buyerState: invoice.buyerState || 'Maharashtra',
-        buyerStateCode: invoice.buyerStateCode || '27',
-        consigneeName: invoice.consigneeName || '',
-        consigneeGst: invoice.consigneeGst || '',
-        consigneeAddress: invoice.consigneeAddress || '',
-        consigneeState: invoice.consigneeState || 'Maharashtra',
-        consigneeStateCode: invoice.consigneeStateCode || '27',
-        templateType: invoice.templateType,
-        items: invoice.items.map((item) => ({
-          description: item.description,
-          hsnCode: item.hsnCode,
-          quantity: item.quantity,
-          ratePerTon: item.ratePerTon,
-          amount: item.amount,
-          transportRate: item.transportRate,
-          transportAmount: item.transportAmount,
-        })),
-        subtotal: invoice.subtotal,
-        transportTotal: invoice.transportTotal,
-        taxableAmount: invoice.taxableAmount,
-        cgstRate: invoice.cgstRate,
-        sgstRate: invoice.sgstRate,
-        igstRate: invoice.igstRate,
-        cgstAmount: invoice.cgstAmount,
-        sgstAmount: invoice.sgstAmount,
-        igstAmount: invoice.igstAmount,
-        grandTotal: invoice.grandTotal,
-        amountInWords: invoice.amountInWords || '',
-      });
+    const pdfPath = await generateInvoicePDF({
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: formatDate(invoice.invoiceDate),
+      transportType: invoice.transportType || 'By Road',
+      vehicleNumber: invoice.vehicle?.vehicleNumber || '-',
+      buyerName: invoice.buyerName,
+      buyerGst: invoice.buyerGst || '',
+      buyerCin: invoice.buyerCin || '',
+      buyerAddress: invoice.buyerAddress || '',
+      buyerState: invoice.buyerState || 'Maharashtra',
+      buyerStateCode: invoice.buyerStateCode || '27',
+      consigneeName: invoice.consigneeName || '',
+      consigneeGst: invoice.consigneeGst || '',
+      consigneeAddress: invoice.consigneeAddress || '',
+      consigneeState: invoice.consigneeState || 'Maharashtra',
+      consigneeStateCode: invoice.consigneeStateCode || '27',
+      templateType: invoice.templateType,
+      items: invoice.items.map((item) => ({
+        description: item.description,
+        hsnCode: item.hsnCode,
+        quantity: item.quantity,
+        ratePerTon: item.ratePerTon,
+        amount: item.amount,
+        transportRate: item.transportRate,
+        transportAmount: item.transportAmount,
+      })),
+      subtotal: invoice.subtotal,
+      transportTotal: invoice.transportTotal,
+      taxableAmount: invoice.taxableAmount,
+      cgstRate: invoice.cgstRate,
+      sgstRate: invoice.sgstRate,
+      igstRate: invoice.igstRate,
+      cgstAmount: invoice.cgstAmount,
+      sgstAmount: invoice.sgstAmount,
+      igstAmount: invoice.igstAmount,
+      grandTotal: invoice.grandTotal,
+      amountInWords: invoice.amountInWords || '',
+    });
+    
+    // Update path if needed
+    if (invoice.pdfPath !== pdfPath) {
       await prisma.invoice.update({ where: { id: invoice.id }, data: { pdfPath } });
     }
 
