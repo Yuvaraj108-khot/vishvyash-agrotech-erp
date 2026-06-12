@@ -30,7 +30,7 @@ async function run() {
       console.log('No invoices found.');
       return;
     }
-    const targetInvoice = invoices[0];
+    const targetInvoice = { id: 'cmq0fvyt0001odw0j9ocz7ebe', invoiceNumber: 'TARGET_FAILING' };
     console.log(`Downloading PDF for invoice ${targetInvoice.invoiceNumber}...`);
 
     const pdfRes = await fetch(`${backendUrl}/api/invoices/${targetInvoice.id}/pdf`, {

@@ -6,8 +6,10 @@ import archiver from 'archiver';
 
 const router = Router();
 
-const BACKUP_DIR = path.join(__dirname, '../../storage/backups');
-const PDF_DIR = path.join(__dirname, '../../storage/pdfs');
+// When running inside Electron: Electron main.js sets BACKUP_DIR/PDF_DIR to AppData paths
+// When running standalone (dev / LAN): falls back to relative storage path
+const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, '../../storage/backups');
+const PDF_DIR    = process.env.PDF_DIR    || path.join(__dirname, '../../storage/pdfs');
 
 function ensureBackupDir() {
   if (!fs.existsSync(BACKUP_DIR)) {

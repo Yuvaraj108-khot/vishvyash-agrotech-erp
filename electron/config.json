@@ -1,0 +1,4 @@
+{
+  "apiUrl": "http://192.168.1.100:5000",
+  "_comment": "Change apiUrl to your office server PC's local IP address. Run 'ipconfig' on the server PC to find it. Do NOT use 'localhost' on client PCs — use the actual IP. Restart the app after changing this file."
+}

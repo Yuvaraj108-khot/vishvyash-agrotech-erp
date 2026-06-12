@@ -1,0 +1,62 @@
+{
+  "name": "vishvyash-erp-desktop",
+  "version": "1.0.0",
+  "description": "Vishvyash Agrotech ERP — Desktop Application",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:installer": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.vishvyash.erp",
+    "productName": "Vishvyash ERP",
+    "copyright": "© 2025 Vishvyash Agrotech Energy",
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "server_bundle/",
+        "to": "server/",
+        "filter": ["**/*", "!**/*.ts", "!**/__tests__/**"]
+      },
+      {
+        "from": "app.config.json",
+        "to": "app.config.json"
+      }
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Vishvyash ERP",
+      "installerIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false
+    },
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "compression": "maximum",
+    "asar": true,
+    "asarUnpack": [
+      "**/*.node"
+    ]
+  }
+}

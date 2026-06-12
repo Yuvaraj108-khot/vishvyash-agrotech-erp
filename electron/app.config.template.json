@@ -1,0 +1,6 @@
+{
+  "_instructions": "RENAME this file to app.config.json. Fill in your real values. NEVER commit app.config.json to git.",
+  "DATABASE_URL": "postgresql://user:password@ep-xxxx.neon.tech/dbname?sslmode=require",
+  "JWT_SECRET": "replace-with-a-64-character-random-string",
+  "JWT_EXPIRES_IN": "7d"
+}

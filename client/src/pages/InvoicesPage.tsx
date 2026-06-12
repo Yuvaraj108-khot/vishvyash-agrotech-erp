@@ -59,16 +59,16 @@ export default function InvoicesPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Pagination
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Cancel Dialog
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
-  
+
   // View Details Dialog
   const [selectedDetails, setSelectedDetails] = useState<any | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -155,24 +155,39 @@ export default function InvoicesPage() {
   };
 
   const handleDownloadPDF = async (id: string, invoiceNumber: string) => {
-    const loadingToast = toast.loading('Retrieving PDF...');
+    const loadingToast = toast.loading('Generating PDF... (may take a few seconds)');
     try {
-      const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const res = await api.get(`/invoices/${id}/pdf`, {
+        responseType: 'blob',
+        timeout: 60000, // 60 second timeout
+      });
+
+      // Check if server returned a JSON error disguised as a blob
+      const contentType = String(res.headers['content-type'] || '');
+      if (contentType.includes('application/json')) {
+        const text = await (res.data as Blob).text();
+        const json = JSON.parse(text);
+        throw new Error(json.error || json.message || 'PDF generation failed');
+      }
+
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `${invoiceNumber.replace(/\//g, '_')}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       toast.dismiss(loadingToast);
       toast.success('Invoice PDF downloaded!');
     } catch (err: any) {
-      console.error(err);
+      console.error('PDF download error:', err);
       toast.dismiss(loadingToast);
-      toast.error('Failed to download invoice PDF.');
+      const msg = err.response?.data?.error || err.message || 'Failed to download invoice PDF.';
+      toast.error(msg);
     }
   };
+
 
   const handleViewDetails = async (id: string) => {
     setViewLoading(true);
@@ -210,7 +225,7 @@ export default function InvoicesPage() {
         <CardContent className="pt-6">
           <form onSubmit={handleSearchSubmit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-6 items-end">
-              
+
               {/* Search Bar */}
               <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="search" className="flex items-center gap-1">
@@ -355,13 +370,12 @@ export default function InvoicesPage() {
                         <td className="p-3 text-right font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                         <td className="p-3 text-center">
                           <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${
-                              inv.status === 'FINAL'
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${inv.status === 'FINAL'
                                 ? 'bg-emerald-500/10 text-emerald-700'
                                 : inv.status === 'DRAFT'
-                                ? 'bg-blue-500/10 text-blue-700'
-                                : 'bg-rose-500/10 text-rose-700 line-through'
-                            }`}
+                                  ? 'bg-blue-500/10 text-blue-700'
+                                  : 'bg-rose-500/10 text-rose-700 line-through'
+                              }`}
                           >
                             {inv.status}
                           </span>
@@ -371,7 +385,7 @@ export default function InvoicesPage() {
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="View details" onClick={() => handleViewDetails(inv.id)}>
                               <Eye className="h-4 w-4" />
                             </Button>
-                            
+
                             {inv.status !== 'DRAFT' && (
                               <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600" title="Download PDF" onClick={() => handleDownloadPDF(inv.id, inv.invoiceNumber)}>
                                 <Download className="h-4 w-4" />
@@ -478,13 +492,12 @@ export default function InvoicesPage() {
                 <div>
                   <span className="text-[9px] text-muted-foreground block font-bold uppercase">Status</span>
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${
-                      selectedDetails.status === 'FINAL'
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${selectedDetails.status === 'FINAL'
                         ? 'bg-emerald-500/10 text-emerald-700'
                         : selectedDetails.status === 'DRAFT'
-                        ? 'bg-blue-500/10 text-blue-700'
-                        : 'bg-rose-500/10 text-rose-700 line-through'
-                    }`}
+                          ? 'bg-blue-500/10 text-blue-700'
+                          : 'bg-rose-500/10 text-rose-700 line-through'
+                      }`}
                   >
                     {selectedDetails.status}
                   </span>
@@ -579,7 +592,7 @@ export default function InvoicesPage() {
                     <span>Taxable Amount:</span>
                     <span>₹{selectedDetails.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                   </div>
-                  
+
                   {selectedDetails.igstRate > 0 ? (
                     <div className="flex justify-between text-muted-foreground text-[10px]">
                       <span>IGST ({selectedDetails.igstRate}%):</span>

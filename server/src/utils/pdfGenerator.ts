@@ -1,8 +1,8 @@
-import puppeteer from 'puppeteer';
 import fs from 'fs';
 import path from 'path';
 import PDFDocument from 'pdfkit';
 import { PrismaClient } from '@prisma/client';
+
 
 const prisma = new PrismaClient();
 
@@ -70,52 +70,10 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
     console.warn('Failed to load settings from DB for PDF generation:', err);
   }
 
-  try {
-    const browser = await puppeteer.launch({
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--no-zygote'
-      ]
-    });
-
-    try {
-      const page = await browser.newPage();
-      const htmlContent = getInvoiceHTML(data, settingsMap);
-      
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' as any });
-      
-      await page.pdf({
-        path: filePath,
-        format: 'A4',
-        printBackground: true,
-        preferCSSPageSize: true,
-        margin: {
-          top: '0',
-          right: '0',
-          bottom: '0',
-          left: '0'
-        }
-      });
-
-      return filePath;
-    } finally {
-      await browser.close();
-    }
-  } catch (puppeteerError) {
-    console.warn('Puppeteer PDF generation failed. Falling back to native PDFKit:', puppeteerError);
-    try {
-      await generateInvoicePDFWithPDFKit(data, filePath, settingsMap);
-      return filePath;
-    } catch (pdfkitError) {
-      console.error('PDFKit fallback generation also failed:', pdfkitError);
-      throw pdfkitError;
-    }
-  }
+  // Use PDFKit directly — fast, pure Node.js, works on all environments including Render.
+  // Puppeteer/Chrome is unreliable on free-tier cloud deployments and causes silent timeouts.
+  await generateInvoicePDFWithPDFKit(data, filePath, settingsMap);
+  return filePath;
 }
 
 function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, settings: Record<string, string>): Promise<void> {

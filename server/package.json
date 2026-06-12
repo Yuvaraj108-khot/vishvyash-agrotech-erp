@@ -6,7 +6,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/src/index.js",
-    "seed": "tsx prisma/seed.ts"
+    "start:local": "cross-env NODE_ENV=production PORT=5000 node dist/src/index.js",
+    "seed": "tsx prisma/seed.ts",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:dev": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "^6.8.0",
@@ -18,12 +21,11 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.1",
-    "nodemailer": "^7.0.3",
     "pdfkit": "^0.16.0",
-    "puppeteer": "^25.1.0",
     "xlsx": "^0.18.5",
     "zod": "^3.24.4"
   },
+
   "devDependencies": {
     "@types/archiver": "^6.0.3",
     "@types/bcryptjs": "^3.0.0",
@@ -34,8 +36,10 @@
     "@types/node": "^22.15.0",
     "@types/nodemailer": "^6.4.17",
     "@types/pdfkit": "^0.13.8",
+    "cross-env": "^7.0.3",
     "prisma": "^6.8.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
+
 }

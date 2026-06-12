@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,58 +8,55 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("STAFF") // ADMIN | STAFF
-  phone     String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  auditLogs        AuditLog[]
+  id                String             @id @default(cuid())
+  email             String             @unique
+  password          String
+  name              String
+  role              String             @default("STAFF")
+  phone             String?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  auditLogs         AuditLog[]
   passwordResetOtps PasswordResetOtp[]
 
   @@map("users")
 }
 
 model Client {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
   gstNumber     String?
   cinNumber     String?
   address       String
   city          String?
-  state         String?  @default("Maharashtra")
+  state         String?   @default("Maharashtra")
   pincode       String?
   phone         String?
   email         String?
   contactPerson String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  invoices Invoice[]
-  payments Payment[]
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  invoices      Invoice[]
+  payments      Payment[]
 
   @@map("clients")
 }
 
 model Driver {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   name           String
   phone          String
   alternatePhone String?
   address        String?
   licenseNumber  String?
   aadhaarNumber  String?
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  invoices Invoice[]
-  vehicles Vehicle[]
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  invoices       Invoice[]
+  vehicles       Vehicle[]
 
   @@map("drivers")
 }
@@ -70,7 +64,7 @@ model Driver {
 model Vehicle {
   id              String    @id @default(cuid())
   vehicleNumber   String    @unique
-  vehicleType     String?   // Truck, Tractor, etc.
+  vehicleType     String?
   ownerName       String?
   driverId        String?
   insuranceExpiry DateTime?
@@ -79,125 +73,107 @@ model Vehicle {
   isActive        Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-
-  driver   Driver?   @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  invoices Invoice[]
+  invoices        Invoice[]
+  driver          Driver?   @relation(fields: [driverId], references: [id])
 
   @@map("vehicles")
 }
 
 model Invoice {
-  id              String   @id @default(cuid())
-  invoiceNumber   String   @unique // VAE/INV/0001
-  invoiceDate     DateTime
-  clientId        String
-  vehicleId       String?
-  driverId        String?
-  transportType   String?  @default("By Road")
-
-  // Buyer info snapshot (for PDF)
-  buyerName       String
-  buyerGst        String?
-  buyerCin        String?
-  buyerAddress    String?
-  buyerState      String?  @default("Maharashtra")
-  buyerStateCode  String?  @default("27")
-
-  // Consignee info snapshot (for PDF Template B)
-  consigneeName   String?
-  consigneeGst    String?
-  consigneeAddress String?
-  consigneeState  String?  @default("Maharashtra")
-  consigneeStateCode String?  @default("27")
-
-  // Template Type (A or B)
-  templateType    String   @default("A")
-
-  // Totals
-  subtotal        Float    @default(0)
-  transportTotal  Float    @default(0)
-  taxableAmount   Float    @default(0)
-  cgstRate        Float    @default(2.5)
-  sgstRate        Float    @default(2.5)
-  cgstAmount      Float    @default(0)
-  sgstAmount      Float    @default(0)
-  igstRate        Float    @default(0)
-  igstAmount      Float    @default(0)
-  grandTotal      Float    @default(0)
-  amountInWords   String?
-
-  // Lifecycle status
-  status          String   @default("DRAFT") // DRAFT | FINAL | CANCELLED
-  paidAmount      Float    @default(0)
-
-  // PDF
-  pdfPath         String?
-
-  notes           String?
-  createdBy       String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  client   Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  vehicle  Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  driver   Driver?  @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  items    InvoiceItem[]
-  payments Payment[]
+  id                 String        @id @default(cuid())
+  invoiceNumber      String        @unique
+  invoiceDate        DateTime
+  clientId           String
+  vehicleId          String?
+  driverId           String?
+  transportType      String?       @default("By Road")
+  buyerName          String
+  buyerGst           String?
+  buyerCin           String?
+  buyerAddress       String?
+  buyerState         String?       @default("Maharashtra")
+  buyerStateCode     String?       @default("27")
+  consigneeName      String?
+  consigneeGst       String?
+  consigneeAddress   String?
+  consigneeState     String?       @default("Maharashtra")
+  consigneeStateCode String?       @default("27")
+  templateType       String        @default("A")
+  subtotal           Float         @default(0)
+  transportTotal     Float         @default(0)
+  taxableAmount      Float         @default(0)
+  cgstRate           Float         @default(2.5)
+  sgstRate           Float         @default(2.5)
+  cgstAmount         Float         @default(0)
+  sgstAmount         Float         @default(0)
+  igstRate           Float         @default(0)
+  igstAmount         Float         @default(0)
+  grandTotal         Float         @default(0)
+  amountInWords      String?
+  status             String        @default("DRAFT")
+  paidAmount         Float         @default(0)
+  pdfPath            String?
+  notes              String?
+  createdBy          String?
+  isActive           Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  items              InvoiceItem[]
+  client             Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  driver             Driver?       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  vehicle            Vehicle?      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  payments           Payment[]
 
   @@map("invoices")
 }
 
 model InvoiceItem {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   invoiceId       String
-  description     String @default("Biomass Briquettes")
-  hsnCode         String @default("4401")
-  quantity        Float  // in tons
+  description     String  @default("Biomass Briquettes")
+  hsnCode         String  @default("4401")
+  quantity        Float
   ratePerTon      Float
-  amount          Float  // quantity * ratePerTon
-  transportRate   Float  @default(0) // per ton
-  transportAmount Float  @default(0) // quantity * transportRate
-  totalAmount     Float  @default(0) // amount + transportAmount
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount          Float
+  transportRate   Float   @default(0)
+  transportAmount Float   @default(0)
+  totalAmount     Float   @default(0)
+  invoice         Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@map("invoice_items")
 }
 
 model Payment {
-  id            String   @id @default(cuid())
-  invoiceId     String
-  clientId      String
-  paymentDate   DateTime
-  amount        Float
-  paymentMode   String   // CASH | CHEQUE | NEFT | RTGS | UPI
-  chequeNumber  String?
-  utrNumber     String?
-  referenceNo   String?
-  bankName      String?
-  remarks       String?
-  createdBy     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  client  Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  invoiceId    String
+  clientId     String
+  paymentDate  DateTime
+  amount       Float
+  paymentMode  String
+  chequeNumber String?
+  utrNumber    String?
+  referenceNo  String?
+  bankName     String?
+  remarks      String?
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  client       Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoice      Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
 
 model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String
-  action     String   // CREATE | UPDATE | DELETE
-  entity     String   // Invoice | Client | Driver | Vehicle | Payment
-  entityId   String
-  details    String?  // JSON string of changes
-  ipAddress  String?
-  createdAt  DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("audit_logs")
 }
@@ -209,8 +185,7 @@ model PasswordResetOtp {
   expiresAt DateTime
   isUsed    Boolean  @default(false)
   createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_otps")
 }

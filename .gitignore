@@ -148,3 +148,9 @@ server/prisma/*.db
 server/prisma/*.db-journal
 *.db
 *.db-journal
+
+# Electron credentials & build bundles
+app.config.json
+electron/app.config.json
+electron/dist/
+server_bundle/
