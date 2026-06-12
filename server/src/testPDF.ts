@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import puppeteer from 'puppeteer';
-import { generateInvoicePDF, InvoiceData, getInvoiceHTML } from './utils/pdfGenerator';
+import { generateInvoicePDF, InvoiceData } from './utils/pdfGenerator';
 
 const ARTIFACTS_DIR = 'C:/Users/YUVARAJ KHOT/.gemini/antigravity-ide/brain/fae4b94c-ccb3-48bb-b01e-a1641435118b';
 
@@ -89,56 +88,14 @@ const case2Data: InvoiceData = {
   amountInWords: "Rupees Two Lakh Thirty Eight Thousand Four Hundred Twenty Eight and Seventy Five Paise Only"
 };
 
-// Custom function to render HTML content and take screenshot via Puppeteer
-async function captureInvoiceScreenshot(data: InvoiceData, filename: string) {
-  // Use same structure as in getInvoiceHTML
-  const htmlContent = getInvoiceHTML(data);
-
-  const browser = await puppeteer.launch({
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--no-zygote'
-    ]
-  });
-
-  try {
-    const page = await browser.newPage();
-    // A4 dimensions: 794px width x 1123px height at 96 dpi
-    await page.setViewport({
-      width: 794,
-      height: 1123,
-      deviceScaleFactor: 2 // High resolution
-    });
-
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' as any });
-
-    // Save screenshot
-    const imagePath = path.join(ARTIFACTS_DIR, filename);
-    await page.screenshot({
-      path: imagePath,
-      fullPage: false // Take only one page viewport size
-    });
-    console.log(`Saved screenshot to ${imagePath}`);
-  } finally {
-    await browser.close();
-  }
-}
-
 async function run() {
   console.log("Generating Case 1 PDF...");
   const pdf1 = await generateInvoicePDF(case1Data);
   console.log(`Saved PDF to ${pdf1}`);
-  // await captureInvoiceScreenshot(case1Data, 'invoice_case1_maharashtra.png');
 
   console.log("Generating Case 2 PDF...");
   const pdf2 = await generateInvoicePDF(case2Data);
   console.log(`Saved PDF to ${pdf2}`);
-  // await captureInvoiceScreenshot(case2Data, 'invoice_case2_interstate.png');
 
   console.log("All done!");
 }
