@@ -110,92 +110,109 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const companyName = (settings['company_name'] || 'VISHVYASH AGROTECH ENERGY').toUpperCase();
       const defaultProd = settings['default_product'] || 'Biomass Briquettes';
       const companySubtitle = `${defaultProd} Manufacturer & Supplier`;
-      const companyAddress = settings['company_address'] || 'Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra - 416101';
-      const companyGst = settings['company_gst'] || '27GHYPM9702C1Z5';
+      const companyAddress = settings['company_address'] || 'Survey No. 57, At Post Borgaon (BK), Tal. Walwa, Dist. Sangli, Maharashtra - 415403';
+      const companyGst = settings['company_gst'] || '27ABCFV1234A1Z5';
 
       // Header - Company Details
       doc.y = headerTextY;
-      doc.fillColor('#005a36').fontSize(22).font('Helvetica-Bold').text(companyName, { align: 'center' });
-      doc.moveDown(0.2);
+      doc.fillColor('#005a36').fontSize(20).font('Helvetica-Bold').text(companyName, { align: 'center' });
+      doc.moveDown(0.15);
       doc.fillColor('#333333').fontSize(10).font('Helvetica').text(companySubtitle, { align: 'center' });
-      doc.moveDown(0.2);
-      doc.fontSize(9).font('Helvetica').fillColor('#333333').text(companyAddress, { align: 'center' });
-      doc.moveDown(0.2);
+      doc.moveDown(0.15);
+      doc.fontSize(9).font('Helvetica').fillColor('#555555').text(companyAddress, { align: 'center' });
+      doc.moveDown(0.15);
       doc.font('Helvetica-Bold').fillColor('#111111').text(`GST No.: ${companyGst}`, { align: 'center' });
-      doc.moveDown(0.8);
+      doc.moveDown(0.5);
 
-      // Thin Top Border line
-      doc.strokeColor('#888888').lineWidth(0.8).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-      doc.moveDown(0.2);
+      // Thick Green Divider line
+      doc.strokeColor('#005a36').lineWidth(2).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
+      doc.moveDown(0.5);
 
       // Title Bar
       const titleY = doc.y;
-      doc.fillColor('#005a36').rect(40, titleY, 515, 24).fill();
-      doc.fillColor('#FFFFFF').fontSize(12).font('Helvetica-Bold').text('TAX INVOICE', 40, titleY + 7, { align: 'center' });
+      doc.fillColor('#005a36').rect(40, titleY, 515, 20).fill();
+      doc.fillColor('#FFFFFF').fontSize(11).font('Helvetica-Bold').text('TAX INVOICE', 40, titleY + 5, { align: 'center' });
       doc.fillColor('#000000');
       
-      doc.y = titleY + 24;
+      doc.y = titleY + 20;
+      doc.moveDown(0.8);
 
       // Metadata Grid Table
       const metaY = doc.y;
-      const metaRowHeight = 24;
+      const metaRowHeight = 20;
       const metaHeight = metaRowHeight * 2;
-      doc.lineWidth(0.8).strokeColor('#888888');
+      doc.lineWidth(0.5).strokeColor('#888888');
+
+      // Draw background for labels
+      doc.fillColor('#f0f0f0').rect(40, metaY, 90, metaHeight).fill();
+      doc.fillColor('#f0f0f0').rect(270, metaY, 90, metaHeight).fill();
 
       // Outer border
       doc.rect(40, metaY, 515, metaHeight).stroke();
 
       // Divider lines
       doc.moveTo(130, metaY).lineTo(130, metaY + metaHeight).stroke();
-      doc.moveTo(297, metaY).lineTo(297, metaY + metaHeight).stroke();
-      doc.moveTo(387, metaY).lineTo(387, metaY + metaHeight).stroke();
+      doc.moveTo(270, metaY).lineTo(270, metaY + metaHeight).stroke();
+      doc.moveTo(360, metaY).lineTo(360, metaY + metaHeight).stroke();
       doc.moveTo(40, metaY + metaRowHeight).lineTo(555, metaY + metaRowHeight).stroke();
 
       // Row 1 text
       doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold');
-      doc.text('Invoice No.', 45, metaY + 8);
-      doc.font('Helvetica').text(data.invoiceNumber, 135, metaY + 8);
-      doc.font('Helvetica-Bold').text('Invoice Date', 302, metaY + 8);
-      doc.font('Helvetica').text(data.invoiceDate, 392, metaY + 8);
+      doc.text('Invoice No.', 45, metaY + 6);
+      doc.font('Helvetica').text(data.invoiceNumber, 135, metaY + 6);
+      doc.font('Helvetica-Bold').text('Invoice Date', 275, metaY + 6);
+      doc.font('Helvetica').text(data.invoiceDate, 365, metaY + 6);
 
       // Row 2 text
-      doc.font('Helvetica-Bold').text('Vehicle No.', 45, metaY + metaRowHeight + 8);
-      doc.font('Helvetica').text(data.vehicleNumber || '-', 135, metaY + metaRowHeight + 8);
-      doc.font('Helvetica-Bold').text('Transport', 302, metaY + metaRowHeight + 8);
-      doc.font('Helvetica').text(data.transportType || 'Truck', 392, metaY + metaRowHeight + 8);
+      doc.font('Helvetica-Bold').text('Vehicle No.', 45, metaY + metaRowHeight + 6);
+      doc.font('Helvetica').text(data.vehicleNumber || '-', 135, metaY + metaRowHeight + 6);
+      doc.font('Helvetica-Bold').text('Transport', 275, metaY + metaRowHeight + 6);
+      doc.font('Helvetica').text(data.transportType || 'Truck', 365, metaY + metaRowHeight + 6);
 
       doc.y = metaY + metaHeight;
       doc.moveDown(0.8);
 
       // Buyer & Consignee Box Layout
       const partyY = doc.y;
-      const boxHeight = 110;
+      const boxHeight = 100;
+      const headerHeight = 20;
 
       if (data.templateType === 'B') {
         // Double boxes
-        doc.strokeColor('#888888').rect(40, partyY, 252, boxHeight).stroke();
+        // Backgrounds for headers
+        doc.fillColor('#f0f0f0').rect(40, partyY, 252, headerHeight).fill();
+        doc.fillColor('#f0f0f0').rect(303, partyY, 252, headerHeight).fill();
+
+        doc.strokeColor('#888888').lineWidth(0.5).rect(40, partyY, 252, boxHeight).stroke();
+        doc.moveTo(40, partyY + headerHeight).lineTo(292, partyY + headerHeight).stroke();
         doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 6);
-        doc.fontSize(9).font('Helvetica').text(data.buyerName, 45, partyY + 18, { width: 242 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + 30, { width: 242, height: 42 });
-        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 75);
+        doc.fontSize(9).font('Helvetica-Bold').text(data.buyerName, 45, partyY + headerHeight + 6, { width: 242 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + headerHeight + 18, { width: 242, height: 42 });
+        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 70);
+        doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         if (data.buyerCin) {
-          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 87);
+          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 94);
         }
 
         doc.strokeColor('#888888').rect(303, partyY, 252, boxHeight).stroke();
+        doc.moveTo(303, partyY + headerHeight).lineTo(555, partyY + headerHeight).stroke();
         doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Consignee (Ship To)', 308, partyY + 6);
-        doc.fontSize(9).font('Helvetica').text(data.consigneeName || '-', 308, partyY + 18, { width: 242 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.consigneeAddress || '-', 308, partyY + 30, { width: 242, height: 42 });
-        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.consigneeGst || '-'}`, 308, partyY + 75);
+        doc.fontSize(9).font('Helvetica-Bold').text(data.consigneeName || '-', 308, partyY + headerHeight + 6, { width: 242 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.consigneeAddress || '-', 308, partyY + headerHeight + 18, { width: 242, height: 42 });
+        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.consigneeGst || '-'}`, 308, partyY + 70);
+        doc.font('Helvetica').text(`State: ${data.consigneeState || '-'} (Code: ${data.consigneeStateCode || '-'})`, 308, partyY + 82);
       } else {
         // Single full-width box (Template A)
-        doc.strokeColor('#888888').rect(40, partyY, 515, boxHeight).stroke();
-        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 8);
-        doc.fontSize(9).font('Helvetica').text(data.buyerName, 45, partyY + 22, { width: 505 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + 36, { width: 505, height: 32 });
-        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 75);
+        doc.fillColor('#f0f0f0').rect(40, partyY, 515, headerHeight).fill();
+        doc.strokeColor('#888888').lineWidth(0.5).rect(40, partyY, 515, boxHeight).stroke();
+        doc.moveTo(40, partyY + headerHeight).lineTo(555, partyY + headerHeight).stroke();
+        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 6);
+        doc.fontSize(9).font('Helvetica-Bold').text(data.buyerName, 45, partyY + headerHeight + 6, { width: 505 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + headerHeight + 18, { width: 505, height: 32 });
+        doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 70);
+        doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         if (data.buyerCin) {
-          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 88);
+          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 94);
         }
       }
 
@@ -205,24 +222,24 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       // Items Table
       const tableY = doc.y;
       const colWidths = {
-        desc: 210, // 40 to 250
-        hsn: 70,   // 250 to 320
-        qty: 80,   // 320 to 400
-        rate: 80,  // 400 to 480
-        amount: 75 // 480 to 555
+        desc: 200,   // 40 to 240
+        hsn: 50,     // 240 to 290
+        qty: 65,     // 290 to 355
+        rate: 90,    // 355 to 445
+        amount: 110  // 445 to 555
       };
 
       // Table Header
-      doc.fillColor('#005a36').rect(40, tableY, 515, 24).fill();
+      doc.fillColor('#005a36').rect(40, tableY, 515, 20).fill();
       doc.fillColor('#FFFFFF').fontSize(9).font('Helvetica-Bold');
-      doc.text('Product', 45, tableY + 7);
-      doc.text('HSN Code', 250, tableY + 7, { width: colWidths.hsn, align: 'center' });
-      doc.text('Qty', 320, tableY + 7, { width: colWidths.qty, align: 'center' });
-      doc.text('Rate/Ton', 400, tableY + 7, { width: colWidths.rate, align: 'center' });
-      doc.text('Amount', 480, tableY + 7, { width: colWidths.amount, align: 'center' });
+      doc.text('Product', 45, tableY + 5);
+      doc.text('HSN Code', 240, tableY + 5, { width: colWidths.hsn, align: 'center' });
+      doc.text('Qty', 290, tableY + 5, { width: colWidths.qty, align: 'center' });
+      doc.text('Rate/Ton', 355, tableY + 5, { width: colWidths.rate, align: 'center' });
+      doc.text('Amount', 445, tableY + 5, { width: colWidths.amount - 5, align: 'right' }); // -5 for padding
 
       // Determine heights
-      const rowHeight = 24;
+      const rowHeight = 22;
       
       // Calculate how many tax rows we will have
       let taxRowsCount = 0;
@@ -239,29 +256,29 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const paddingRowsCount = Math.max(0, minDataRows - data.items.length);
 
       const itemsAreaHeight = (data.items.length + paddingRowsCount + taxRowsCount) * rowHeight;
-      const tableBottomY = tableY + 24 + itemsAreaHeight;
+      const tableBottomY = tableY + 20 + itemsAreaHeight;
 
       // Draw outer table border
-      doc.strokeColor('#888888').lineWidth(0.8);
-      doc.rect(40, tableY, 515, 24 + itemsAreaHeight).stroke();
+      doc.strokeColor('#888888').lineWidth(0.5);
+      doc.rect(40, tableY, 515, 20 + itemsAreaHeight).stroke();
 
       // Vertical dividers
-      doc.moveTo(250, tableY).lineTo(250, tableBottomY).stroke();
-      doc.moveTo(320, tableY).lineTo(320, tableBottomY).stroke();
-      doc.moveTo(400, tableY).lineTo(400, tableBottomY).stroke();
-      doc.moveTo(480, tableY).lineTo(480, tableBottomY).stroke();
+      doc.moveTo(240, tableY).lineTo(240, tableBottomY).stroke();
+      doc.moveTo(290, tableY).lineTo(290, tableBottomY).stroke();
+      doc.moveTo(355, tableY).lineTo(355, tableBottomY).stroke();
+      doc.moveTo(445, tableY).lineTo(445, tableBottomY).stroke();
 
-      let currentY = tableY + 24;
+      let currentY = tableY + 20;
 
       // Draw Items rows
       doc.fillColor('#000000').font('Helvetica').fontSize(9);
       
       data.items.forEach((item) => {
-        doc.text(item.description, 45, currentY + 7, { width: 200 });
-        doc.text(item.hsnCode || '-', 250, currentY + 7, { width: colWidths.hsn, align: 'center' });
-        doc.text(`${item.quantity.toFixed(3)} Ton`, 320, currentY + 7, { width: colWidths.qty, align: 'center' });
-        doc.text(`Rs. ${item.ratePerTon.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 400, currentY + 7, { width: colWidths.rate, align: 'center' });
-        doc.text(`Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 480, currentY + 7, { width: colWidths.amount, align: 'center' });
+        doc.text(item.description, 45, currentY + 6, { width: 190 });
+        doc.text(item.hsnCode || '-', 240, currentY + 6, { width: colWidths.hsn, align: 'center' });
+        doc.text(`${item.quantity.toFixed(3)} Ton`, 290, currentY + 6, { width: colWidths.qty, align: 'center' });
+        doc.text(`Rs. ${item.ratePerTon.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 355, currentY + 6, { width: colWidths.rate, align: 'center' });
+        doc.text(`Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 445, currentY + 6, { width: colWidths.amount - 5, align: 'right' });
 
         currentY += rowHeight;
         doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
@@ -277,21 +294,21 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const drawTaxRow = (label: string, value: string, isTotal = false) => {
         if (isTotal) {
           // Fill light green for Grand Total row
-          doc.fillColor('#e6f2ec').rect(40.5, currentY + 0.5, 514, rowHeight - 1).fill();
+          doc.fillColor('#f0f0f0').rect(40.5, currentY + 0.5, 514, rowHeight - 1).fill();
           // redraw vertical dividers for this row since we filled over them
           doc.strokeColor('#888888');
-          doc.moveTo(250, currentY).lineTo(250, currentY + rowHeight).stroke();
-          doc.moveTo(320, currentY).lineTo(320, currentY + rowHeight).stroke();
-          doc.moveTo(400, currentY).lineTo(400, currentY + rowHeight).stroke();
-          doc.moveTo(480, currentY).lineTo(480, currentY + rowHeight).stroke();
+          doc.moveTo(240, currentY).lineTo(240, currentY + rowHeight).stroke();
+          doc.moveTo(290, currentY).lineTo(290, currentY + rowHeight).stroke();
+          doc.moveTo(355, currentY).lineTo(355, currentY + rowHeight).stroke();
+          doc.moveTo(445, currentY).lineTo(445, currentY + rowHeight).stroke();
 
           doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9);
         } else {
           doc.fillColor('#000000').font('Helvetica').fontSize(9);
         }
 
-        doc.text(label, 400, currentY + 7, { width: colWidths.rate, align: 'center' });
-        doc.text(value, 480, currentY + 7, { width: colWidths.amount, align: 'center' });
+        doc.text(label, 355, currentY + 6, { width: colWidths.rate - 5, align: 'right' });
+        doc.text(value, 445, currentY + 6, { width: colWidths.amount - 5, align: 'right' });
         
         currentY += rowHeight;
         if (currentY < tableBottomY) { // Don't draw the bottom border twice
@@ -306,17 +323,19 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       if (data.igstRate > 0) {
         drawTaxRow(`IGST @${data.igstRate}%`, `Rs. ${data.igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       } else {
+        // For CGST and SGST, the user's image shows "Taxable Amount" first if needed, but we can just use the label.
+        drawTaxRow(`Taxable Amount`, `Rs. ${data.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`CGST @${data.cgstRate}%`, `Rs. ${data.cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`SGST @${data.sgstRate}%`, `Rs. ${data.sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       }
 
       drawTaxRow('Grand Total', `Rs. ${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, true);
 
-      // Amount in Words box
-      currentY = tableBottomY + 10;
-      doc.strokeColor('#888888').lineWidth(0.8).rect(40, currentY, 515, 24).stroke();
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('#111111').text('Amount in Words: ', 45, currentY + 8);
-      doc.font('Helvetica').fillColor('#333333').text(data.amountInWords, 135, currentY + 8, { width: 415 });
+      // Amount in Words box (Attached to table)
+      currentY = tableBottomY;
+      doc.strokeColor('#888888').lineWidth(0.5).rect(40, currentY, 515, 24).stroke();
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#111111').text('Amount in Words:', 45, currentY + 7);
+      doc.font('Helvetica-Oblique').fillColor('#333333').text(`INR ${data.amountInWords}`, 135, currentY + 7, { width: 415 });
 
       // Signatory Section
       const sigY = currentY + 40;
