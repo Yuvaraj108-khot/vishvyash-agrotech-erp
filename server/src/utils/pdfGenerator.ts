@@ -63,7 +63,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<string> {
   let settingsMap: Record<string, string> = {};
   try {
     const dbSettings = await prisma.settings.findMany();
-    dbSettings.forEach((s) => {
+    dbSettings.forEach((s: any) => {
       settingsMap[s.key] = s.value;
     });
   } catch (err) {
@@ -83,16 +83,13 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // Resolve logo path
-      let logoPath = path.join(__dirname, '../../assets/logo.png'); // Development / tsx
+      // Resolve logo path (more robust)
+      let logoPath = path.resolve(process.cwd(), 'assets/logo.png');
       if (!fs.existsSync(logoPath)) {
-        logoPath = path.join(__dirname, '../../../assets/logo.png'); // Compiled production (dist)
+        logoPath = path.resolve(process.cwd(), 'server/assets/logo.png');
       }
       if (!fs.existsSync(logoPath)) {
-        logoPath = path.join(process.cwd(), 'assets/logo.png'); // Current working directory fallback
-      }
-      if (!fs.existsSync(logoPath)) {
-        logoPath = path.join(process.cwd(), 'server/assets/logo.png'); // Root context fallback
+        logoPath = path.join(__dirname, '../../assets/logo.png');
       }
 
       // Draw Logo centered
@@ -255,16 +252,21 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const minDataRows = Math.max(1, totalRows - taxRowsCount);
       const paddingRowsCount = Math.max(0, minDataRows - data.items.length);
 
-      const itemsAreaHeight = (data.items.length + paddingRowsCount + taxRowsCount) * rowHeight;
-      const tableBottomY = tableY + 20 + itemsAreaHeight;
+      const itemsAreaHeight = (data.items.length + paddingRowsCount) * rowHeight;
+      const taxAreaHeight = taxRowsCount * rowHeight;
+      const totalTableHeight = 20 + itemsAreaHeight + taxAreaHeight;
+      const tableBottomY = tableY + totalTableHeight;
 
       // Draw outer table border
       doc.strokeColor('#888888').lineWidth(0.5);
-      doc.rect(40, tableY, 515, 20 + itemsAreaHeight).stroke();
+      doc.rect(40, tableY, 515, totalTableHeight).stroke();
 
-      // Vertical dividers
-      doc.moveTo(240, tableY).lineTo(240, tableBottomY).stroke();
-      doc.moveTo(290, tableY).lineTo(290, tableBottomY).stroke();
+      // Vertical dividers ONLY for the items area (not extending into tax rows for the left columns)
+      const itemsBottomY = tableY + 20 + itemsAreaHeight;
+      doc.moveTo(240, tableY).lineTo(240, itemsBottomY).stroke();
+      doc.moveTo(290, tableY).lineTo(290, itemsBottomY).stroke();
+      
+      // The dividers for Rate and Amount columns continue down through the tax rows
       doc.moveTo(355, tableY).lineTo(355, tableBottomY).stroke();
       doc.moveTo(445, tableY).lineTo(445, tableBottomY).stroke();
 
@@ -290,16 +292,13 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
         doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
       }
 
-      // Tax Rows (integrated into the grid)
+      // Tax Rows (integrated into the grid, blank left side)
       const drawTaxRow = (label: string, value: string, isTotal = false) => {
         if (isTotal) {
-          // Fill light green for Grand Total row
-          doc.fillColor('#f0f0f0').rect(40.5, currentY + 0.5, 514, rowHeight - 1).fill();
-          // redraw vertical dividers for this row since we filled over them
+          // Fill light green for Grand Total row, ONLY across the last two columns
+          doc.fillColor('#f0f0f0').rect(355.5, currentY + 0.5, 199, rowHeight - 1).fill();
+          // redraw vertical divider for this row since we filled over them
           doc.strokeColor('#888888');
-          doc.moveTo(240, currentY).lineTo(240, currentY + rowHeight).stroke();
-          doc.moveTo(290, currentY).lineTo(290, currentY + rowHeight).stroke();
-          doc.moveTo(355, currentY).lineTo(355, currentY + rowHeight).stroke();
           doc.moveTo(445, currentY).lineTo(445, currentY + rowHeight).stroke();
 
           doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9);
@@ -308,11 +307,15 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
         }
 
         doc.text(label, 355, currentY + 6, { width: colWidths.rate - 5, align: 'right' });
+        if (isTotal) {
+          doc.font('Helvetica-Bold');
+        }
         doc.text(value, 445, currentY + 6, { width: colWidths.amount - 5, align: 'right' });
         
         currentY += rowHeight;
-        if (currentY < tableBottomY) { // Don't draw the bottom border twice
-          doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
+        if (currentY < tableBottomY) { 
+          // Don't draw the line all the way across! Only across the Rate and Amount columns!
+          doc.moveTo(355, currentY).lineTo(555, currentY).stroke();
         }
       };
 
@@ -321,6 +324,7 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       }
       
       if (data.igstRate > 0) {
+        drawTaxRow(`Taxable Amount`, `Rs. ${data.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`IGST @${data.igstRate}%`, `Rs. ${data.igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       } else {
         // For CGST and SGST, the user's image shows "Taxable Amount" first if needed, but we can just use the label.
