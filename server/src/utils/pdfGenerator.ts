@@ -83,7 +83,6 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       const stream = fs.createWriteStream(filePath);
       doc.pipe(stream);
 
-      // Resolve logo path (more robust)
       let logoPath = path.resolve(process.cwd(), 'assets/logo.png');
       if (!fs.existsSync(logoPath)) {
         logoPath = path.resolve(process.cwd(), 'server/assets/logo.png');
@@ -92,7 +91,6 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
         logoPath = path.join(__dirname, '../../assets/logo.png');
       }
 
-      // Draw Logo centered
       let headerTextY = 40;
       if (fs.existsSync(logoPath)) {
         try {
@@ -103,64 +101,47 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
         }
       }
 
-      // Dynamic Company Settings
       const companyName = (settings['company_name'] || 'VISHVYASH AGROTECH ENERGY').toUpperCase();
       const defaultProd = settings['default_product'] || 'Biomass Briquettes';
       const companySubtitle = `${defaultProd} Manufacturer & Supplier`;
-      const companyAddress = settings['company_address'] || 'Survey No. 57, At Post Borgaon (BK), Tal. Walwa, Dist. Sangli, Maharashtra - 415403';
-      const companyGst = settings['company_gst'] || '27ABCFV1234A1Z5';
+      const companyAddress = settings['company_address'] || 'Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra - 416101';
+      const companyGst = settings['company_gst'] || '27GHYPM9702C1Z5';
 
-      // Header - Company Details
       doc.y = headerTextY;
-      doc.fillColor('#005a36').fontSize(20).font('Helvetica-Bold').text(companyName, { align: 'center' });
+      doc.fillColor('#006400').fontSize(20).font('Helvetica-Bold').text(companyName, { align: 'center' });
       doc.moveDown(0.15);
       doc.fillColor('#333333').fontSize(10).font('Helvetica').text(companySubtitle, { align: 'center' });
       doc.moveDown(0.15);
       doc.fontSize(9).font('Helvetica').fillColor('#555555').text(companyAddress, { align: 'center' });
       doc.moveDown(0.15);
       doc.font('Helvetica-Bold').fillColor('#111111').text(`GST No.: ${companyGst}`, { align: 'center' });
-      doc.moveDown(0.5);
+      doc.moveDown(1.5);
 
-      // Thick Green Divider line
-      doc.strokeColor('#005a36').lineWidth(2).moveTo(40, doc.y).lineTo(555, doc.y).stroke();
-      doc.moveDown(0.5);
-
-      // Title Bar
       const titleY = doc.y;
-      doc.fillColor('#005a36').rect(40, titleY, 515, 20).fill();
+      doc.fillColor('#006400').rect(40, titleY, 515, 20).fill();
       doc.fillColor('#FFFFFF').fontSize(11).font('Helvetica-Bold').text('TAX INVOICE', 40, titleY + 5, { align: 'center' });
       doc.fillColor('#000000');
       
       doc.y = titleY + 20;
       doc.moveDown(0.8);
 
-      // Metadata Grid Table
       const metaY = doc.y;
       const metaRowHeight = 20;
       const metaHeight = metaRowHeight * 2;
-      doc.lineWidth(0.5).strokeColor('#888888');
+      doc.lineWidth(0.5).strokeColor('#000000');
 
-      // Draw background for labels
-      doc.fillColor('#f0f0f0').rect(40, metaY, 90, metaHeight).fill();
-      doc.fillColor('#f0f0f0').rect(270, metaY, 90, metaHeight).fill();
-
-      // Outer border
       doc.rect(40, metaY, 515, metaHeight).stroke();
-
-      // Divider lines
       doc.moveTo(130, metaY).lineTo(130, metaY + metaHeight).stroke();
       doc.moveTo(270, metaY).lineTo(270, metaY + metaHeight).stroke();
       doc.moveTo(360, metaY).lineTo(360, metaY + metaHeight).stroke();
       doc.moveTo(40, metaY + metaRowHeight).lineTo(555, metaY + metaRowHeight).stroke();
 
-      // Row 1 text
       doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold');
       doc.text('Invoice No.', 45, metaY + 6);
       doc.font('Helvetica').text(data.invoiceNumber, 135, metaY + 6);
       doc.font('Helvetica-Bold').text('Invoice Date', 275, metaY + 6);
       doc.font('Helvetica').text(data.invoiceDate, 365, metaY + 6);
 
-      // Row 2 text
       doc.font('Helvetica-Bold').text('Vehicle No.', 45, metaY + metaRowHeight + 6);
       doc.font('Helvetica').text(data.vehicleNumber || '-', 135, metaY + metaRowHeight + 6);
       doc.font('Helvetica-Bold').text('Transport', 275, metaY + metaRowHeight + 6);
@@ -169,110 +150,73 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       doc.y = metaY + metaHeight;
       doc.moveDown(0.8);
 
-      // Buyer & Consignee Box Layout
       const partyY = doc.y;
       const boxHeight = 100;
-      const headerHeight = 20;
 
       if (data.templateType === 'B') {
-        // Double boxes
-        // Backgrounds for headers
-        doc.fillColor('#f0f0f0').rect(40, partyY, 252, headerHeight).fill();
-        doc.fillColor('#f0f0f0').rect(303, partyY, 252, headerHeight).fill();
-
-        doc.strokeColor('#888888').lineWidth(0.5).rect(40, partyY, 252, boxHeight).stroke();
-        doc.moveTo(40, partyY + headerHeight).lineTo(292, partyY + headerHeight).stroke();
-        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 6);
-        doc.fontSize(9).font('Helvetica-Bold').text(data.buyerName, 45, partyY + headerHeight + 6, { width: 242 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + headerHeight + 18, { width: 242, height: 42 });
+        doc.strokeColor('#000000').lineWidth(0.5).rect(40, partyY, 252, boxHeight).stroke();
+        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 8);
+        doc.fontSize(9).font('Helvetica').text(data.buyerName, 45, partyY + 22, { width: 242 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + 34, { width: 242, height: 42 });
         doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 70);
-        doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         if (data.buyerCin) {
-          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 94);
+          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 82);
+        } else {
+          doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         }
 
-        doc.strokeColor('#888888').rect(303, partyY, 252, boxHeight).stroke();
-        doc.moveTo(303, partyY + headerHeight).lineTo(555, partyY + headerHeight).stroke();
-        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Consignee (Ship To)', 308, partyY + 6);
-        doc.fontSize(9).font('Helvetica-Bold').text(data.consigneeName || '-', 308, partyY + headerHeight + 6, { width: 242 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.consigneeAddress || '-', 308, partyY + headerHeight + 18, { width: 242, height: 42 });
+        doc.strokeColor('#000000').rect(303, partyY, 252, boxHeight).stroke();
+        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Consignee (Ship To)', 308, partyY + 8);
+        doc.fontSize(9).font('Helvetica').text(data.consigneeName || '-', 308, partyY + 22, { width: 242 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.consigneeAddress || '-', 308, partyY + 34, { width: 242, height: 42 });
         doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.consigneeGst || '-'}`, 308, partyY + 70);
-        doc.font('Helvetica').text(`State: ${data.consigneeState || '-'} (Code: ${data.consigneeStateCode || '-'})`, 308, partyY + 82);
       } else {
-        // Single full-width box (Template A)
-        doc.fillColor('#f0f0f0').rect(40, partyY, 515, headerHeight).fill();
-        doc.strokeColor('#888888').lineWidth(0.5).rect(40, partyY, 515, boxHeight).stroke();
-        doc.moveTo(40, partyY + headerHeight).lineTo(555, partyY + headerHeight).stroke();
-        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 6);
-        doc.fontSize(9).font('Helvetica-Bold').text(data.buyerName, 45, partyY + headerHeight + 6, { width: 505 });
-        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + headerHeight + 18, { width: 505, height: 32 });
+        doc.strokeColor('#000000').lineWidth(0.5).rect(40, partyY, 515, boxHeight).stroke();
+        doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold').text('Buyer (Bill To)', 45, partyY + 8);
+        doc.fontSize(9).font('Helvetica').text(data.buyerName, 45, partyY + 22, { width: 505 });
+        doc.fontSize(9).font('Helvetica').fillColor('#333333').text(data.buyerAddress, 45, partyY + 34, { width: 505, height: 32 });
         doc.font('Helvetica-Bold').fillColor('#111111').text(`GSTIN: ${data.buyerGst || '-'}`, 45, partyY + 70);
-        doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         if (data.buyerCin) {
-          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 94);
+          doc.font('Helvetica-Bold').text(`CIN No: ${data.buyerCin}`, 45, partyY + 82);
+        } else {
+          doc.font('Helvetica').text(`State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})`, 45, partyY + 82);
         }
       }
 
       doc.y = partyY + boxHeight;
       doc.moveDown(0.8);
 
-      // Items Table
       const tableY = doc.y;
-      const colWidths = {
-        desc: 200,   // 40 to 240
-        hsn: 50,     // 240 to 290
-        qty: 65,     // 290 to 355
-        rate: 90,    // 355 to 445
-        amount: 110  // 445 to 555
-      };
+      const colWidths = { desc: 200, hsn: 50, qty: 65, rate: 90, amount: 110 };
 
-      // Table Header
-      doc.fillColor('#005a36').rect(40, tableY, 515, 20).fill();
+      doc.fillColor('#006400').rect(40, tableY, 515, 20).fill();
       doc.fillColor('#FFFFFF').fontSize(9).font('Helvetica-Bold');
       doc.text('Product', 45, tableY + 5);
       doc.text('HSN Code', 240, tableY + 5, { width: colWidths.hsn, align: 'center' });
       doc.text('Qty', 290, tableY + 5, { width: colWidths.qty, align: 'center' });
       doc.text('Rate/Ton', 355, tableY + 5, { width: colWidths.rate, align: 'center' });
-      doc.text('Amount', 445, tableY + 5, { width: colWidths.amount - 5, align: 'right' }); // -5 for padding
+      doc.text('Amount', 445, tableY + 5, { width: colWidths.amount - 5, align: 'center' });
 
-      // Determine heights
       const rowHeight = 22;
-      
-      // Calculate how many tax rows we will have
       let taxRowsCount = 0;
       if (data.transportTotal > 0) taxRowsCount++;
-      if (data.igstRate > 0) {
-        taxRowsCount++; // IGST
-      } else {
-        taxRowsCount += 2; // CGST, SGST
-      }
-      taxRowsCount++; // Grand Total
+      if (data.igstRate > 0) taxRowsCount++; 
+      else taxRowsCount += 2;
+      taxRowsCount++;
 
-      const totalRows = Math.max(5, data.items.length + taxRowsCount); // ensure at least 5 rows total
-      const minDataRows = Math.max(1, totalRows - taxRowsCount);
-      const paddingRowsCount = Math.max(0, minDataRows - data.items.length);
-
-      const itemsAreaHeight = (data.items.length + paddingRowsCount) * rowHeight;
+      const itemsAreaHeight = data.items.length * rowHeight;
       const taxAreaHeight = taxRowsCount * rowHeight;
       const totalTableHeight = 20 + itemsAreaHeight + taxAreaHeight;
       const tableBottomY = tableY + totalTableHeight;
 
-      // Draw outer table border
-      doc.strokeColor('#888888').lineWidth(0.5);
+      doc.strokeColor('#000000').lineWidth(0.5);
       doc.rect(40, tableY, 515, totalTableHeight).stroke();
-
-      // Vertical dividers ONLY for the items area (not extending into tax rows for the left columns)
-      const itemsBottomY = tableY + 20 + itemsAreaHeight;
-      doc.moveTo(240, tableY).lineTo(240, itemsBottomY).stroke();
-      doc.moveTo(290, tableY).lineTo(290, itemsBottomY).stroke();
-      
-      // The dividers for Rate and Amount columns continue down through the tax rows
+      doc.moveTo(240, tableY).lineTo(240, tableBottomY).stroke();
+      doc.moveTo(290, tableY).lineTo(290, tableBottomY).stroke();
       doc.moveTo(355, tableY).lineTo(355, tableBottomY).stroke();
       doc.moveTo(445, tableY).lineTo(445, tableBottomY).stroke();
 
       let currentY = tableY + 20;
-
-      // Draw Items rows
       doc.fillColor('#000000').font('Helvetica').fontSize(9);
       
       data.items.forEach((item) => {
@@ -280,42 +224,27 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
         doc.text(item.hsnCode || '-', 240, currentY + 6, { width: colWidths.hsn, align: 'center' });
         doc.text(`${item.quantity.toFixed(3)} Ton`, 290, currentY + 6, { width: colWidths.qty, align: 'center' });
         doc.text(`Rs. ${item.ratePerTon.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 355, currentY + 6, { width: colWidths.rate, align: 'center' });
-        doc.text(`Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 445, currentY + 6, { width: colWidths.amount - 5, align: 'right' });
-
+        doc.text(`Rs. ${item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 445, currentY + 6, { width: colWidths.amount - 5, align: 'center' });
         currentY += rowHeight;
         doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
       });
 
-      // Padding rows
-      for (let i = 0; i < paddingRowsCount; i++) {
-        currentY += rowHeight;
-        doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
-      }
-
-      // Tax Rows (integrated into the grid, blank left side)
       const drawTaxRow = (label: string, value: string, isTotal = false) => {
         if (isTotal) {
-          // Fill light green for Grand Total row, ONLY across the last two columns
-          doc.fillColor('#f0f0f0').rect(355.5, currentY + 0.5, 199, rowHeight - 1).fill();
-          // redraw vertical divider for this row since we filled over them
-          doc.strokeColor('#888888');
+          doc.fillColor('#e6f2ec').rect(355.5, currentY + 0.5, 199, rowHeight - 1).fill();
+          doc.strokeColor('#000000');
           doc.moveTo(445, currentY).lineTo(445, currentY + rowHeight).stroke();
-
           doc.fillColor('#000000').font('Helvetica-Bold').fontSize(9);
         } else {
           doc.fillColor('#000000').font('Helvetica').fontSize(9);
         }
-
-        doc.text(label, 355, currentY + 6, { width: colWidths.rate - 5, align: 'right' });
-        if (isTotal) {
-          doc.font('Helvetica-Bold');
-        }
-        doc.text(value, 445, currentY + 6, { width: colWidths.amount - 5, align: 'right' });
+        doc.text(label, 355, currentY + 6, { width: colWidths.rate, align: 'center' });
+        if (isTotal) doc.font('Helvetica-Bold');
+        doc.text(value, 445, currentY + 6, { width: colWidths.amount - 5, align: 'center' });
         
         currentY += rowHeight;
         if (currentY < tableBottomY) { 
-          // Don't draw the line all the way across! Only across the Rate and Amount columns!
-          doc.moveTo(355, currentY).lineTo(555, currentY).stroke();
+          doc.moveTo(40, currentY).lineTo(555, currentY).stroke();
         }
       };
 
@@ -324,27 +253,26 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
       }
       
       if (data.igstRate > 0) {
-        drawTaxRow(`Taxable Amount`, `Rs. ${data.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`IGST @${data.igstRate}%`, `Rs. ${data.igstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       } else {
-        // For CGST and SGST, the user's image shows "Taxable Amount" first if needed, but we can just use the label.
-        drawTaxRow(`Taxable Amount`, `Rs. ${data.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`CGST @${data.cgstRate}%`, `Rs. ${data.cgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         drawTaxRow(`SGST @${data.sgstRate}%`, `Rs. ${data.sgstAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       }
-
       drawTaxRow('Grand Total', `Rs. ${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, true);
 
-      // Amount in Words box (Attached to table)
-      currentY = tableBottomY;
-      doc.strokeColor('#888888').lineWidth(0.5).rect(40, currentY, 515, 24).stroke();
+      currentY = tableBottomY + 15;
+      doc.strokeColor('#000000').lineWidth(0.5).rect(40, currentY, 515, 24).stroke();
       doc.fontSize(9).font('Helvetica-Bold').fillColor('#111111').text('Amount in Words:', 45, currentY + 7);
-      doc.font('Helvetica-Oblique').fillColor('#333333').text(`INR ${data.amountInWords}`, 135, currentY + 7, { width: 415 });
+      
+      let amountStr = (data.amountInWords || '').trim();
+      amountStr = amountStr.replace(/^(INR\s*)+/gi, '').trim();
+      amountStr = 'INR ' + amountStr;
+      
+      doc.font('Helvetica').fillColor('#111111').text(amountStr, 135, currentY + 7, { width: 415 });
 
-      // Signatory Section
-      const sigY = currentY + 40;
+      const sigY = currentY + 50;
       doc.fontSize(9).font('Helvetica-Bold').fillColor('#000000').text('Authorized Signatory', 380, sigY, { width: 175, align: 'right' });
-      doc.fontSize(9).font('Helvetica').fillColor('#555555').text(`For ${companyName}`, 300, sigY + 14, { width: 255, align: 'right' });
+      doc.fontSize(9).font('Helvetica').fillColor('#333333').text(`For ${companyName}`, 300, sigY + 14, { width: 255, align: 'right' });
 
       doc.end();
       stream.on('finish', () => resolve());
@@ -356,10 +284,10 @@ function generateInvoicePDFWithPDFKit(data: InvoiceData, filePath: string, setti
 }
 
 export function getInvoiceHTML(data: InvoiceData, settings: Record<string, string> = {}): string {
-  const companyName = settings['company_name'] || 'Vishvyash Agrotech Energy';
+  const companyName = settings['company_name'] || 'VISHVYASH AGROTECH ENERGY';
   const defaultProd = settings['default_product'] || 'Biomass Briquettes';
   const companySubtitle = `${defaultProd} Manufacturer & Supplier`;
-  const companyAddress = settings['company_address'] || 'Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra - 416101';
+  const companyAddress = settings['company_address'] || 'Gat No. 1696/A, Sujata Apartment, Galli No. 12, Sujata Park, Jaysingpur, Kolhapur, Maharashtra – 416101';
   const companyGst = settings['company_gst'] || '27GHYPM9702C1Z5';
 
   let logoBase64 = '';
@@ -463,7 +391,7 @@ export function getInvoiceHTML(data: InvoiceData, settings: Record<string, strin
             <div class="party-details">
               ${data.buyerAddress}<br/>
               <b>GSTIN:</b> ${data.buyerGst || '-'}<br/>
-              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : ''}
+              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : `State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})<br/>`}
             </div>
           </td>
           <td class="consignee-col">
@@ -487,7 +415,7 @@ export function getInvoiceHTML(data: InvoiceData, settings: Record<string, strin
             <div class="party-details">
               ${data.buyerAddress}<br/>
               <b>GSTIN:</b> ${data.buyerGst || '-'}<br/>
-              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : ''}
+              ${data.buyerCin ? `<b>CIN No:</b> ${data.buyerCin}<br/>` : `State: ${data.buyerState || '-'} (Code: ${data.buyerStateCode || '-'})<br/>`}
             </div>
           </td>
         </tr>
@@ -598,7 +526,6 @@ export function getInvoiceHTML(data: InvoiceData, settings: Record<string, strin
         .meta-label {
           font-weight: bold;
           color: #222;
-          background-color: #f5f5f5;
         }
 
         .meta-value {
@@ -610,14 +537,13 @@ export function getInvoiceHTML(data: InvoiceData, settings: Record<string, strin
           width: 100%;
           border-collapse: collapse;
           margin-bottom: 12px;
-          border: 1px solid #ccc;
-          background-color: #f9f9f9;
+          border: 1px solid #999;
         }
 
         .buyer-consignee-table td {
           padding: 10px 12px;
           vertical-align: top;
-          border: 1px solid #ccc;
+          border: 1px solid #999;
         }
 
         .buyer-col {

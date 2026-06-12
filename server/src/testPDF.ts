@@ -59,33 +59,24 @@ const case2Data: InvoiceData = {
     {
       description: "Biomass Briquettes (Grade A)",
       hsnCode: "4401",
-      quantity: 24.250,
-      ratePerTon: 5100.00,
-      amount: 123675.00,
-      transportRate: 800.00,
-      transportAmount: 19400.00
-    },
-    {
-      description: "Biomass Pellets (6mm Premium)",
-      hsnCode: "4401",
-      quantity: 12.000,
-      ratePerTon: 6200.00,
-      amount: 74400.00,
-      transportRate: 800.00,
-      transportAmount: 9600.00
+      quantity: 111.000,
+      ratePerTon: 111111.00,
+      amount: 12333321.00,
+      transportRate: 0,
+      transportAmount: 0
     }
   ],
-  subtotal: 198075.00,
-  transportTotal: 29000.00,
-  taxableAmount: 227075.00,
-  cgstRate: 0,
-  sgstRate: 0,
-  cgstAmount: 0,
-  sgstAmount: 0,
-  igstRate: 5,
-  igstAmount: 11353.75,
-  grandTotal: 238428.75,
-  amountInWords: "Rupees Two Lakh Thirty Eight Thousand Four Hundred Twenty Eight and Seventy Five Paise Only"
+  subtotal: 12333321.00,
+  transportTotal: 0,
+  taxableAmount: 12333321.00,
+  cgstRate: 2.5,
+  sgstRate: 2.5,
+  cgstAmount: 308333.03,
+  sgstAmount: 308333.03,
+  igstRate: 0,
+  igstAmount: 0,
+  grandTotal: 12949987.05,
+  amountInWords: "One Crore Twenty Nine Lakh Forty Nine Thousand Nine Hundred Eighty Seven Rupees and Five Paise Only"
 };
 
 async function run() {
