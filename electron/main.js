@@ -27,6 +27,9 @@ let serverProcess = null;
 let mainWindow = null;
 let splashWindow = null;
 let isQuitting = false;
+let serverProcessExited = false;
+let serverProcessExitCode = null;
+let serverStderrBuffer = [];
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
 const logDir = path.join(app.getPath('userData'), 'logs');
@@ -104,21 +107,35 @@ function loadConfig(paths) {
 }
 
 // ─── Wait for server health endpoint ─────────────────────────────────────────
-function waitForServer(maxWaitMs = 120000) {
+function waitForServer(maxWaitMs = 30000) {
   writeStartupLog(`waitForServer() started. Max wait time = ${maxWaitMs}ms`);
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
     let isResolved = false;
+    let attempt = 0;
 
     const check = () => {
       if (isResolved) return;
-      writeStartupLog(`Polling server health check endpoint...`);
+
+      // Check if server process has already exited
+      if (serverProcessExited) {
+        isResolved = true;
+        const errMsg = `Server process exited unexpectedly with code ${serverProcessExitCode}.\n\nLast server errors:\n${serverStderrBuffer.join('') || 'None'}`;
+        writeStartupLog(`ERROR: ${errMsg}`);
+        reject(new Error(errMsg));
+        return;
+      }
+
+      attempt++;
+      const url = `http://127.0.0.1:${INTERNAL_PORT}/health`;
+      writeStartupLog(`Polling server health check endpoint (attempt #${attempt}): ${url}`);
+      
       const req = http.get(
-        `http://localhost:${INTERNAL_PORT}/health`,
+        url,
         { timeout: 2000 },
         (res) => {
           res.resume(); // Consume data to free memory/socket
-          writeStartupLog(`Health check response: statusCode = ${res.statusCode}`);
+          writeStartupLog(`Health check response (attempt #${attempt}): statusCode = ${res.statusCode}`);
           if (res.statusCode === 200) {
             isResolved = true;
             resolve(true);
@@ -129,12 +146,12 @@ function waitForServer(maxWaitMs = 120000) {
       );
       req.on('error', (err) => {
         if (isResolved) return;
-        writeStartupLog(`Health check request error: ${err.message}`);
+        writeStartupLog(`Health check request error (attempt #${attempt}): ${err.message}`);
         scheduleRetry();
       });
       req.on('timeout', () => {
         if (isResolved) return;
-        writeStartupLog(`Health check request timeout`);
+        writeStartupLog(`Health check request timeout (attempt #${attempt})`);
         req.destroy();
         scheduleRetry();
       });
@@ -143,9 +160,11 @@ function waitForServer(maxWaitMs = 120000) {
     const scheduleRetry = () => {
       if (isResolved) return;
       if (Date.now() - startTime > maxWaitMs) {
-        writeStartupLog(`ERROR: Server did not start within ${maxWaitMs / 1000} seconds`);
+        const timeElapsed = Math.round((Date.now() - startTime) / 1000);
+        const errMsg = `Server did not start within ${timeElapsed} seconds. Last server errors:\n${serverStderrBuffer.join('') || 'None'}`;
+        writeStartupLog(`ERROR: ${errMsg}`);
         isResolved = true;
-        reject(new Error(`Server did not start within ${maxWaitMs / 1000} seconds`));
+        reject(new Error(errMsg));
         return;
       }
       setTimeout(check, 1000);
@@ -231,11 +250,18 @@ function startServer(paths, config) {
     logStream.write(`[STDOUT] ${d}`);
   });
   serverProcess.stderr.on('data', (d) => {
-    process.stderr.write('[Server ERR] ' + d);
-    logStream.write(`[STDERR] ${d}`);
+    const chunk = d.toString();
+    process.stderr.write('[Server ERR] ' + chunk);
+    logStream.write(`[STDERR] ${chunk}`);
+    serverStderrBuffer.push(chunk);
+    if (serverStderrBuffer.length > 30) {
+      serverStderrBuffer.shift();
+    }
   });
 
   serverProcess.on('exit', (code) => {
+    serverProcessExited = true;
+    serverProcessExitCode = code;
     if (isQuitting) return;
     writeStartupLog(`ERROR: Server exited unexpectedly with code ${code}`);
     console.error('Server exited unexpectedly with code', code);
@@ -273,6 +299,7 @@ function createSplashWindow() {
 
 // ─── Main window ──────────────────────────────────────────────────────────────
 function createMainWindow() {
+  writeStartupLog(`createMainWindow() execution started.`);
   mainWindow = new BrowserWindow({
     width     : 1440,
     height    : 900,
@@ -291,20 +318,27 @@ function createMainWindow() {
   buildMenu();
 
   mainWindow.once('ready-to-show', () => {
+    writeStartupLog(`Main window 'ready-to-show' event fired. Closing splash window and showing main window.`);
     if (splashWindow) { splashWindow.close(); splashWindow = null; }
     mainWindow.show();
     mainWindow.focus();
   });
 
-  mainWindow.on('closed', () => { mainWindow = null; });
+  mainWindow.on('closed', () => {
+    writeStartupLog(`Main window closed.`);
+    mainWindow = null;
+  });
 
   // Open external links in system browser, not inside the app
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    writeStartupLog(`Opening external link: ${url}`);
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  mainWindow.loadURL(`http://localhost:${INTERNAL_PORT}`);
+  const loadUrl = `http://127.0.0.1:${INTERNAL_PORT}`;
+  writeStartupLog(`Loading main window UI URL: ${loadUrl}`);
+  mainWindow.loadURL(loadUrl);
 }
 
 // ─── Application menu ─────────────────────────────────────────────────────────
@@ -382,34 +416,36 @@ app.whenReady().then(async () => {
   }
 
   // 1. Show splash immediately
+  writeStartupLog(`Creating splash window...`);
   createSplashWindow();
+  writeStartupLog(`Splash window created.`);
 
   // 2. Start the embedded server
+  writeStartupLog(`Starting embedded server...`);
   const started = startServer(paths, config);
   if (!started) return;
+  writeStartupLog(`Embedded server start returned true.`);
 
   // 3. Wait for server to be ready (polls /health)
   try {
-    writeStartupLog(`Waiting for server to become ready...`);
-    await waitForServer(120000);
+    writeStartupLog(`Waiting for server to become ready (max 30 seconds)...`);
+    await waitForServer(30000);
     writeStartupLog(`✅ Server is ready on port ${INTERNAL_PORT}`);
   } catch (e) {
     writeStartupLog(`ERROR: waitForServer failed: ${e.message}`);
     if (splashWindow) { splashWindow.close(); }
     dialog.showErrorBox(
       'Startup Failed',
-      'The ERP server failed to start in 120 seconds.\n\n' +
-      'Possible causes:\n' +
-      '• Cannot connect to Neon database (check internet connection)\n' +
-      '• DATABASE_URL is incorrect\n\n' +
-      'Please check your internet connection and try again.'
+      `The ERP server failed to start in 30 seconds.\n\nReason:\n${e.message}`
     );
     app.quit();
     return;
   }
 
-  // 4. Open the main window — loads http://localhost:57842
+  // 4. Open the main window — loads http://127.0.0.1:57842
+  writeStartupLog(`Creating main window...`);
   createMainWindow();
+  writeStartupLog(`Main window creation initiated.`);
 });
 
 app.on('before-quit', () => {

@@ -89,6 +89,7 @@ app.use(cors({
     if (
       !origin ||
       origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:') ||
       origin.startsWith('file://') ||
       /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
       /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||

@@ -133,12 +133,12 @@ async function run() {
   console.log("Generating Case 1 PDF...");
   const pdf1 = await generateInvoicePDF(case1Data);
   console.log(`Saved PDF to ${pdf1}`);
-  await captureInvoiceScreenshot(case1Data, 'invoice_case1_maharashtra.png');
+  // await captureInvoiceScreenshot(case1Data, 'invoice_case1_maharashtra.png');
 
   console.log("Generating Case 2 PDF...");
   const pdf2 = await generateInvoicePDF(case2Data);
   console.log(`Saved PDF to ${pdf2}`);
-  await captureInvoiceScreenshot(case2Data, 'invoice_case2_interstate.png');
+  // await captureInvoiceScreenshot(case2Data, 'invoice_case2_interstate.png');
 
   console.log("All done!");
 }

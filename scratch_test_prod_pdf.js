@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 async function run() {
   try {
@@ -20,20 +21,10 @@ async function run() {
     const token = loginData.token;
     console.log('Logged in successfully.');
 
-    console.log('Fetching invoices...');
-    const invoicesRes = await fetch(`${backendUrl}/api/invoices`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const invoicesData = await invoicesRes.json();
-    const invoices = invoicesData.data || [];
-    if (invoices.length === 0) {
-      console.log('No invoices found.');
-      return;
-    }
-    const targetInvoice = { id: 'cmq0fvyt0001odw0j9ocz7ebe', invoiceNumber: 'TARGET_FAILING' };
-    console.log(`Downloading PDF for invoice ${targetInvoice.invoiceNumber}...`);
+    const targetInvoiceId = 'cmq20qt3u0002ey0jsjvho017'; // VAE/26-27/0003 (Template B)
+    console.log(`Downloading PDF for invoice ${targetInvoiceId} from Render...`);
 
-    const pdfRes = await fetch(`${backendUrl}/api/invoices/${targetInvoice.id}/pdf`, {
+    const pdfRes = await fetch(`${backendUrl}/api/invoices/${targetInvoiceId}/pdf`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -45,8 +36,15 @@ async function run() {
 
     const arrayBuffer = await pdfRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync('downloaded_prod_latest.pdf', buffer);
-    console.log('Saved downloaded PDF to downloaded_prod_latest.pdf');
+    const pdfPath = path.join(__dirname, 'downloaded_prod_0003.pdf');
+    fs.writeFileSync(pdfPath, buffer);
+    console.log(`Saved downloaded PDF to ${pdfPath}`);
+
+    // Check if the downloaded PDF has text segments related to Consignee
+    const pdfStr = buffer.toString('ascii');
+    // Since the production PDF might be compressed, let's see if the word "Consignee" is in the text
+    // Note: If compressed, it won't match, but let's check size
+    console.log("PDF File Size:", buffer.length);
   } catch (error) {
     console.error('Error during test:', error);
   }

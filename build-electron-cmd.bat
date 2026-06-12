@@ -40,6 +40,8 @@ cd electron\server_bundle || exit /b 1
 cd ..\..
 
 echo [6/6] Packaging Electron Installer...
+set "ELECTRON_BUILDER_CACHE=%cd%\\electron\\.builderCache"
+if not exist "%ELECTRON_BUILDER_CACHE%" mkdir "%ELECTRON_BUILDER_CACHE%"
 cd electron || exit /b 1
 if not exist app.config.json (
   if exist app.config.template.json (
