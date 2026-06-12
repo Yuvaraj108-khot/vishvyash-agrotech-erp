@@ -13,8 +13,7 @@ const transporter = nodemailer.createTransport({
 export async function sendOTPEmail(to: string, otp: string, name: string): Promise<boolean> {
   try {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.log(`📧 OTP for ${to}: ${otp} (Email not configured, printing to console)`);
-      return true;
+      throw new Error('SMTP credentials are not configured. Cannot send OTP.');
     }
 
     await transporter.sendMail({
@@ -44,7 +43,6 @@ export async function sendOTPEmail(to: string, otp: string, name: string): Promi
     return true;
   } catch (error) {
     console.error('Email send error:', error);
-    console.log(`📧 OTP for ${to}: ${otp} (Fallback to console)`);
-    return true; // Don't block password reset if email fails in dev
+    return false;
   }
 }
