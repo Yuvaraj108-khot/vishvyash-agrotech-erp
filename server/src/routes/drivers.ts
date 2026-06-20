@@ -124,17 +124,24 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 });
 
 // DELETE /api/drivers/:id
-router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await prisma.driver.delete({
+    const driver = await prisma.driver.update({
       where: { id: req.params.id as string },
+      data: { isActive: false },
     });
 
     await prisma.auditLog.create({
-      data: { userId: req.user!.id, action: 'DELETE', entity: 'Driver', entityId: req.params.id as string },
+      data: {
+        userId: req.user!.id,
+        action: 'DELETE',
+        entity: 'Driver',
+        entityId: req.params.id as string,
+        details: JSON.stringify({ name: driver.name, status: 'DEACTIVATED' }),
+      },
     });
 
-    res.json({ message: 'Driver deleted.' });
+    res.json({ message: 'Driver marked inactive.' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete driver.' });
   }

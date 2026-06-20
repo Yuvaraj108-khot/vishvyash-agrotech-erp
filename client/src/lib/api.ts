@@ -13,7 +13,7 @@ import axios from 'axios';
 
 // In production build VITE_API_URL should be empty — API calls go to /api (same origin).
 // In dev, VITE_API_URL can be set to an explicit host for testing against Render.
-const BASE_URL = ((import.meta as any).env?.VITE_API_URL || '') + '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: BASE_URL,

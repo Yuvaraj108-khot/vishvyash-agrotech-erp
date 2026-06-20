@@ -282,69 +282,140 @@ export default function PaymentsPage() {
           </div>
         </div>
       ) : (
-        <Card className="shadow-sm border-border bg-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
-                  <th className="p-3">Receipt Date</th>
-                  <th className="p-3">Client Account</th>
-                  <th className="p-3">Invoice Reference</th>
-                  <th className="p-3">Payment Mode</th>
-                  <th className="p-3">Transaction Details</th>
-                  <th className="p-3 font-semibold">Amount Received</th>
-                  {isAdmin && <th className="p-3 text-right">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {payments.length > 0 ? (
-                  payments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-muted/30">
-                      <td className="p-3">{new Date(payment.paymentDate).toLocaleDateString('en-IN')}</td>
-                      <td className="p-3 font-semibold text-foreground">{payment.client.name}</td>
-                      <td className="p-3">
-                        <span className="font-semibold block">{payment.invoice.invoiceNumber}</span>
-                        <span className="text-[10px] text-muted-foreground block">
-                          Total Billed: ₹{payment.invoice.grandTotal.toLocaleString('en-IN')}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 text-[10px]">
-                          {payment.paymentMode}
-                        </span>
-                      </td>
-                      <td className="p-3 max-w-[200px]">
-                        {payment.utrNumber && <p className="truncate">UTR: <span className="font-mono text-foreground font-semibold">{payment.utrNumber}</span></p>}
-                        {payment.chequeNumber && <p className="truncate">Cheque No: <span className="font-mono text-foreground font-semibold">{payment.chequeNumber}</span></p>}
-                        {payment.bankName && <p className="truncate text-muted-foreground text-[10px]">{payment.bankName}</p>}
-                        {payment.remarks && <p className="truncate italic text-muted-foreground text-[10px]">"{payment.remarks}"</p>}
-                      </td>
-                      <td className="p-3 font-bold text-emerald-700">₹{payment.amount.toLocaleString('en-IN')}</td>
-                      {isAdmin && (
-                        <td className="p-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-rose-500 hover:text-rose-700"
-                            title="Void Payment"
-                            onClick={() => openDeleteDialog(payment)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      )}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={isAdmin ? 7 : 6} className="p-8 text-center text-muted-foreground">
-                      No payment receipts logged yet.
-                    </td>
+        <div className="space-y-4">
+          {/* Desktop Table View */}
+          <Card className="hidden md:block shadow-sm border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="px-4 py-3 min-w-[100px]">Receipt Date</th>
+                    <th className="px-4 py-3 min-w-[180px]">Client Account</th>
+                    <th className="px-4 py-3 min-w-[150px]">Invoice Reference</th>
+                    <th className="px-4 py-3 min-w-[110px]">Payment Mode</th>
+                    <th className="px-4 py-3 min-w-[180px]">Transaction Details</th>
+                    <th className="px-4 py-3 font-semibold min-w-[130px]">Amount Received</th>
+                    {isAdmin && <th className="px-4 py-3 text-right min-w-[80px]">Actions</th>}
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y">
+                  {payments.length > 0 ? (
+                    payments.map((payment) => (
+                      <tr key={payment.id} className="hover:bg-muted/30">
+                        <td className="px-4 py-3">{new Date(payment.paymentDate).toLocaleDateString('en-IN')}</td>
+                        <td className="px-4 py-3 font-semibold text-foreground">{payment.client.name}</td>
+                        <td className="px-4 py-3">
+                          <span className="font-semibold block">{payment.invoice.invoiceNumber}</span>
+                          <span className="text-[10px] text-muted-foreground block">
+                            Total Billed: ₹{payment.invoice.grandTotal.toLocaleString('en-IN')}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 text-[10px]">
+                            {payment.paymentMode}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 max-w-[200px]">
+                          {payment.utrNumber && <p className="truncate">UTR: <span className="font-mono text-foreground font-semibold">{payment.utrNumber}</span></p>}
+                          {payment.chequeNumber && <p className="truncate">Cheque No: <span className="font-mono text-foreground font-semibold">{payment.chequeNumber}</span></p>}
+                          {payment.bankName && <p className="truncate text-muted-foreground text-[10px]">{payment.bankName}</p>}
+                          {payment.remarks && <p className="truncate italic text-muted-foreground text-[10px]">"{payment.remarks}"</p>}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-emerald-700">₹{payment.amount.toLocaleString('en-IN')}</td>
+                        {isAdmin && (
+                          <td className="px-4 py-3 text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-rose-500 hover:text-rose-700"
+                              title="Void Payment"
+                              onClick={() => openDeleteDialog(payment)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={isAdmin ? 7 : 6} className="px-4 py-8 text-center text-muted-foreground">
+                        No payment receipts logged yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden space-y-3">
+            {payments.length > 0 ? (
+              payments.map((payment) => (
+                <Card key={payment.id} className="p-4 space-y-3 shadow-sm border border-border bg-card">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-muted-foreground">{new Date(payment.paymentDate).toLocaleDateString('en-IN')}</span>
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 text-[10px]">
+                      {payment.paymentMode}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Client:</span>
+                      <span className="font-semibold text-foreground">{payment.client.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Invoice:</span>
+                      <span className="font-semibold font-mono">{payment.invoice.invoiceNumber}</span>
+                    </div>
+                    {payment.utrNumber && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">UTR:</span>
+                        <span className="font-mono text-foreground font-semibold">{payment.utrNumber}</span>
+                      </div>
+                    )}
+                    {payment.chequeNumber && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Cheque No:</span>
+                        <span className="font-mono text-foreground font-semibold">{payment.chequeNumber}</span>
+                      </div>
+                    )}
+                    {payment.bankName && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Bank:</span>
+                        <span className="text-muted-foreground">{payment.bankName}</span>
+                      </div>
+                    )}
+                    {payment.remarks && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Remarks:</span>
+                        <span className="italic text-muted-foreground">"{payment.remarks}"</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center border-t pt-2 mt-2 font-semibold">
+                      <span className="text-muted-foreground">Amount Paid:</span>
+                      <span className="text-sm font-bold text-emerald-700">₹{payment.amount.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="flex items-center justify-end border-t pt-2.5 mt-1">
+                      <Button variant="outline" size="sm" className="h-8 flex-1 text-rose-500 border-rose-200 hover:bg-rose-50" onClick={() => openDeleteDialog(payment)}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Void Payment
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              ))
+            ) : (
+              <div className="p-8 text-center text-muted-foreground bg-card border rounded-lg">
+                No payment receipts logged yet.
+              </div>
+            )}
           </div>
+
 
           {/* Pagination Footer */}
           {totalPages > 1 && (
@@ -370,7 +441,7 @@ export default function PaymentsPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       {/* Record Payment Dialog */}

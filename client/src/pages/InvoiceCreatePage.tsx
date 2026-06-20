@@ -344,7 +344,7 @@ export default function InvoiceCreatePage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Columns - Form Configurations */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           {/* Template selection & general */}
           <Card className="shadow-sm border-border bg-card">
             <CardHeader className="pb-3">
@@ -353,7 +353,7 @@ export default function InvoiceCreatePage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Invoice Number (FY Reset)</Label>
                   <Input value={nextInvoiceNumber} disabled className="bg-muted font-mono" />
@@ -373,7 +373,7 @@ export default function InvoiceCreatePage() {
               {/* Template Type selection */}
               <div className="space-y-2 border-t pt-3">
                 <Label className="font-semibold text-foreground">Invoice Layout Template</Label>
-                <div className="flex items-center gap-6 mt-1.5">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-1.5">
                   <label className="flex items-center gap-2 cursor-pointer font-medium text-foreground">
                     <input
                       type="radio"
@@ -433,7 +433,7 @@ export default function InvoiceCreatePage() {
                     <Label htmlFor="buyer-name">Buyer Name</Label>
                     <Input id="buyer-name" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label htmlFor="buyer-gst">GSTIN</Label>
                       <Input id="buyer-gst" value={buyerGst} onChange={(e) => setBuyerGst(e.target.value.toUpperCase())} />
@@ -447,7 +447,7 @@ export default function InvoiceCreatePage() {
                     <Label htmlFor="buyer-address">Billing Address</Label>
                     <Input id="buyer-address" value={buyerAddress} onChange={(e) => setBuyerAddress(e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label htmlFor="buyer-state">State</Label>
                       <Input id="buyer-state" value={buyerState} onChange={(e) => setBuyerState(e.target.value)} />
@@ -479,7 +479,7 @@ export default function InvoiceCreatePage() {
                       <Label htmlFor="consignee-address">Delivery Address</Label>
                       <Input id="consignee-address" value={consigneeAddress} onChange={(e) => setConsigneeAddress(e.target.value)} />
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label htmlFor="consignee-state">State</Label>
                         <Input id="consignee-state" value={consigneeState} onChange={(e) => setConsigneeState(e.target.value)} />
@@ -502,7 +502,7 @@ export default function InvoiceCreatePage() {
                 <Truck className="h-4 w-4 text-emerald-600" /> Logistics Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="transport-type">Transport Mode</Label>
                 <Input id="transport-type" value={transportType} onChange={(e) => setTransportType(e.target.value)} />
@@ -640,7 +640,7 @@ export default function InvoiceCreatePage() {
         </div>
 
         {/* Right Column - Summary & Submissions */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           <Card className="shadow-sm border-border bg-card">
             <CardHeader>
               <CardTitle className="text-sm font-bold flex items-center gap-1.5 text-emerald-800">

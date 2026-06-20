@@ -339,79 +339,153 @@ export default function InvoicesPage() {
           </div>
         </div>
       ) : (
-        <Card className="shadow-sm border-border bg-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
-                  <th className="p-3">Invoice No</th>
-                  <th className="p-3">Billing Date</th>
-                  <th className="p-3">Buyer Name</th>
-                  <th className="p-3">Vehicle</th>
-                  <th className="p-3 text-right">Quantity (MT)</th>
-                  <th className="p-3 text-right">Grand Total</th>
-                  <th className="p-3 text-center">Status</th>
-                  <th className="p-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {invoices.length > 0 ? (
-                  invoices.map((inv) => {
-                    const totalQty = inv.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-                    return (
-                      <tr key={inv.id} className={`hover:bg-muted/30 ${inv.status === 'CANCELLED' ? 'bg-rose-500/5 text-muted-foreground opacity-75' : ''}`}>
-                        <td className="p-3 font-semibold text-foreground font-mono">{inv.invoiceNumber}</td>
-                        <td className="p-3">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
-                        <td className="p-3 truncate max-w-[200px] font-medium" title={inv.buyerName}>{inv.buyerName}</td>
-                        <td className="p-3 font-mono text-[10px]">
-                          {inv.vehicle?.vehicleNumber || <span className="text-muted-foreground">Direct</span>}
-                        </td>
-                        <td className="p-3 text-right font-medium">{totalQty.toFixed(3)} MT</td>
-                        <td className="p-3 text-right font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                        <td className="p-3 text-center">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${inv.status === 'FINAL'
-                                ? 'bg-emerald-500/10 text-emerald-700'
-                                : inv.status === 'DRAFT'
-                                  ? 'bg-blue-500/10 text-blue-700'
-                                  : 'bg-rose-500/10 text-rose-700 line-through'
-                              }`}
-                          >
-                            {inv.status}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right shrink-0">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="View details" onClick={() => handleViewDetails(inv.id)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-
-                            {inv.status !== 'DRAFT' && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600" title="Download PDF" onClick={() => handleDownloadPDF(inv.id, inv.invoiceNumber)}>
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            )}
-
-                            {inv.status !== 'CANCELLED' && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:text-rose-700" title="Delete Invoice" onClick={() => openCancelDialog(inv)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                      No invoices found in sales register.
-                    </td>
+        <div className="space-y-4">
+          {/* Desktop Table View */}
+          <Card className="hidden md:block shadow-sm border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
+                    <th className="px-4 py-3 min-w-[120px]">Invoice No</th>
+                    <th className="px-4 py-3 min-w-[100px]">Billing Date</th>
+                    <th className="px-4 py-3 min-w-[180px]">Buyer Name</th>
+                    <th className="px-4 py-3 min-w-[110px]">Vehicle</th>
+                    <th className="px-4 py-3 text-right min-w-[100px]">Quantity (MT)</th>
+                    <th className="px-4 py-3 text-right min-w-[110px]">Grand Total</th>
+                    <th className="px-4 py-3 text-center min-w-[90px]">Status</th>
+                    <th className="px-4 py-3 text-right min-w-[100px]">Actions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y">
+                  {invoices.length > 0 ? (
+                    invoices.map((inv) => {
+                      const totalQty = inv.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+                      return (
+                        <tr key={inv.id} className={`hover:bg-muted/30 ${inv.status === 'CANCELLED' ? 'bg-rose-500/5 text-muted-foreground opacity-75' : ''}`}>
+                          <td className="px-4 py-3 font-semibold text-foreground font-mono">{inv.invoiceNumber}</td>
+                          <td className="px-4 py-3">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
+                          <td className="px-4 py-3 truncate max-w-[200px] font-medium" title={inv.buyerName}>{inv.buyerName}</td>
+                          <td className="px-4 py-3 font-mono text-[10px]">
+                            {inv.vehicle?.vehicleNumber || <span className="text-muted-foreground">Direct</span>}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium">{totalQty.toFixed(3)} MT</td>
+                          <td className="px-4 py-3 text-right font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${inv.status === 'FINAL'
+                                  ? 'bg-emerald-500/10 text-emerald-700'
+                                  : inv.status === 'DRAFT'
+                                    ? 'bg-blue-500/10 text-blue-700'
+                                    : 'bg-rose-500/10 text-rose-700 line-through'
+                                }`}
+                            >
+                              {inv.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right shrink-0">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" title="View details" onClick={() => handleViewDetails(inv.id)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+
+                              {inv.status !== 'DRAFT' && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-emerald-600" title="Download PDF" onClick={() => handleDownloadPDF(inv.id, inv.invoiceNumber)}>
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              )}
+
+                              {inv.status !== 'CANCELLED' && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:text-rose-700" title="Delete Invoice" onClick={() => openCancelDialog(inv)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                        No invoices found in sales register.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Mobile Card List View */}
+          <div className="md:hidden space-y-3">
+            {invoices.length > 0 ? (
+              invoices.map((inv) => {
+                const totalQty = inv.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+                return (
+                  <Card key={inv.id} className="p-4 space-y-3 shadow-sm border border-border bg-card">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold font-mono text-sm text-foreground">{inv.invoiceNumber}</span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold ${inv.status === 'FINAL'
+                            ? 'bg-emerald-500/10 text-emerald-700'
+                            : inv.status === 'DRAFT'
+                              ? 'bg-blue-500/10 text-blue-700'
+                              : 'bg-rose-500/10 text-rose-700 line-through'
+                          }`}
+                      >
+                        {inv.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Buyer:</span>
+                        <span className="font-medium text-foreground truncate max-w-[200px]">{inv.buyerName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span>{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Vehicle:</span>
+                        <span className="font-mono">{inv.vehicle?.vehicleNumber || 'Direct'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Quantity:</span>
+                        <span className="font-medium">{totalQty.toFixed(3)} MT</span>
+                      </div>
+                      <div className="flex justify-between items-center border-t pt-2 mt-2 font-semibold">
+                        <span className="text-muted-foreground">Total Amount:</span>
+                        <span className="text-sm font-bold text-emerald-800 dark:text-emerald-500">₹{inv.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 border-t pt-2.5 mt-1">
+                      <Button variant="outline" size="sm" className="h-8 flex-1" onClick={() => handleViewDetails(inv.id)}>
+                        <Eye className="h-3.5 w-3.5 mr-1" /> View
+                      </Button>
+                      {inv.status !== 'DRAFT' && (
+                        <Button variant="outline" size="sm" className="h-8 flex-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => handleDownloadPDF(inv.id, inv.invoiceNumber)}>
+                          <Download className="h-3.5 w-3.5 mr-1" /> PDF
+                        </Button>
+                      )}
+                      {inv.status !== 'CANCELLED' && (
+                        <Button variant="outline" size="sm" className="h-8 flex-1 text-rose-500 border-rose-200 hover:bg-rose-50" onClick={() => openCancelDialog(inv)}>
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Void
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })
+            ) : (
+              <div className="p-8 text-center text-muted-foreground bg-card border rounded-lg">
+                No invoices found in sales register.
+              </div>
+            )}
           </div>
+
+
 
           {/* Pagination Footer */}
           {totalPages > 1 && (
@@ -437,7 +511,7 @@ export default function InvoicesPage() {
               </Button>
             </div>
           )}
-        </Card>
+        </div>
       )}
 
       {/* Cancel Invoice Confirmation Dialog */}

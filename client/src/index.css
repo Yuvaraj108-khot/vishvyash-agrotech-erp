@@ -55,6 +55,11 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    overflow-x: hidden;
+  }
+  #root {
+    width: 100%;
+    overflow-x: hidden;
   }
 }
 
@@ -99,3 +104,6 @@
 .delay-150 { animation-delay: 150ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
+
+
+

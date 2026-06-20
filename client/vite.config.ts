@@ -7,9 +7,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   // Dev proxy target: VITE_API_URL if explicitly set in .env, else local server
-  // - For office server dev:    set VITE_API_URL= (empty) → proxies to localhost:5000
+  // - For office server dev:    set VITE_API_URL= (empty) → proxies to localhost:4000
   // - For Render testing:       set VITE_API_URL=https://vishvyash-agrotech-erp.onrender.com
-  const devProxyTarget = env.VITE_API_URL || 'http://localhost:5000';
+  const devProxyTarget = env.VITE_API_URL || 'http://localhost:4000';
 
   return {
     plugins: [react()],

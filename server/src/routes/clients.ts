@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -168,10 +168,11 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 });
 
 // DELETE /api/clients/:id
-router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await prisma.client.delete({
+    const client = await prisma.client.update({
       where: { id: req.params.id as string },
+      data: { isActive: false },
     });
 
     await prisma.auditLog.create({
@@ -180,10 +181,11 @@ router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest,
         action: 'DELETE',
         entity: 'Client',
         entityId: req.params.id as string,
+        details: JSON.stringify({ name: client.name, status: 'DEACTIVATED' }),
       },
     });
 
-    res.json({ message: 'Client deleted.' });
+    res.json({ message: 'Client profile marked inactive.' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete client.' });
   }

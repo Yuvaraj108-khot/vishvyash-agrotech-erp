@@ -163,7 +163,7 @@ export default function DashboardPage() {
       {/* Charts Grid */}
       <div className="grid gap-6 md:grid-cols-3">
         {/* Revenue over time (Area Chart) */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm md:col-span-2 space-y-4">
+        <div className="rounded-xl border bg-card p-6 shadow-sm md:col-span-2 space-y-4 min-w-0">
           <div>
             <h3 className="text-sm font-bold text-foreground">Revenue Dynamics</h3>
             <p className="text-[11px] text-muted-foreground">Monthly sales and collections performance</p>
@@ -200,12 +200,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Collections vs Outstanding (Pie Chart) */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm flex flex-col justify-between">
+        <div className="rounded-xl border bg-card p-6 shadow-sm flex flex-col justify-between min-w-0">
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-foreground">Asset Collection</h3>
             <p className="text-[11px] text-muted-foreground">Percentage of collected vs outstanding receivables</p>
           </div>
-          <div className="h-56 relative flex items-center justify-center">
+          <div className="w-full h-56 relative flex items-center justify-center">
             {data.cards.totalRevenue > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
       {/* Lists Section */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Invoices list */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm lg:col-span-2 space-y-4">
+        <div className="rounded-xl border bg-card p-6 shadow-sm lg:col-span-2 space-y-4 min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-sm font-bold text-foreground">Recent Invoices</h3>
@@ -255,26 +255,27 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b text-muted-foreground">
-                  <th className="py-2">Inv No.</th>
-                  <th className="py-2">Client</th>
-                  <th className="py-2">Date</th>
-                  <th className="py-2">Amount</th>
-                  <th className="py-2 text-right">Status</th>
+                <tr className="border-b text-muted-foreground font-semibold">
+                  <th className="px-3 py-2 min-w-[90px]">Inv No.</th>
+                  <th className="px-3 py-2 min-w-[120px]">Client</th>
+                  <th className="px-3 py-2 min-w-[80px]">Date</th>
+                  <th className="px-3 py-2 min-w-[90px]">Amount</th>
+                  <th className="px-3 py-2 text-right min-w-[80px]">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data.recentInvoices.length > 0 ? (
                   data.recentInvoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-muted/50">
-                      <td className="py-2.5 font-medium">{inv.invoiceNumber}</td>
-                      <td className="py-2.5 truncate max-w-[120px]">{inv.client.name}</td>
-                      <td className="py-2.5">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
-                      <td className="py-2.5 font-bold">₹{inv.grandTotal.toLocaleString('en-IN')}</td>
-                      <td className="py-2.5 text-right">
+                      <td className="px-3 py-2.5 font-medium">{inv.invoiceNumber}</td>
+                      <td className="px-3 py-2.5 truncate max-w-[120px]">{inv.client.name}</td>
+                      <td className="px-3 py-2.5">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
+                      <td className="px-3 py-2.5 font-bold">₹{inv.grandTotal.toLocaleString('en-IN')}</td>
+                      <td className="px-3 py-2.5 text-right">
                         <span
                           className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             inv.status === 'PAID'
@@ -291,7 +292,7 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-4 text-center text-muted-foreground">
+                    <td colSpan={5} className="px-3 py-4 text-center text-muted-foreground">
                       No invoices recorded yet.
                     </td>
                   </tr>
@@ -299,10 +300,45 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card/List View */}
+          <div className="md:hidden space-y-2">
+            {data.recentInvoices.length > 0 ? (
+              data.recentInvoices.map((inv) => (
+                <div key={inv.id} className="p-3 border rounded-lg bg-card/50 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold font-mono text-foreground">{inv.invoiceNumber}</span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold ${
+                        inv.status === 'PAID'
+                          ? 'bg-emerald-500/10 text-emerald-600'
+                          : inv.status === 'PARTIAL'
+                          ? 'bg-amber-500/10 text-amber-600'
+                          : 'bg-rose-500/10 text-rose-600'
+                      }`}
+                    >
+                      {inv.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground truncate max-w-[150px]">{inv.client.name}</span>
+                    <span className="font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {new Date(inv.invoiceDate).toLocaleDateString('en-IN')}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center text-muted-foreground border rounded-lg">
+                No invoices recorded yet.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Top performing clients */}
-        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
+        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4 min-w-0">
           <div>
             <h3 className="text-sm font-bold text-foreground">Top Buyers</h3>
             <p className="text-[11px] text-muted-foreground">Clients generating highest transaction volume</p>

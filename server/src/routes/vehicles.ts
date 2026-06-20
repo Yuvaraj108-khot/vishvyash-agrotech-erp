@@ -225,15 +225,24 @@ router.put('/:id', authenticate, async (req: AuthRequest, res: Response): Promis
 });
 
 // DELETE /api/vehicles/:id
-router.delete('/:id', authenticate, authorize('ADMIN'), async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await prisma.vehicle.delete({ where: { id: req.params.id as string } });
-
-    await prisma.auditLog.create({
-      data: { userId: req.user!.id, action: 'DELETE', entity: 'Vehicle', entityId: req.params.id as string },
+    const vehicle = await prisma.vehicle.update({
+      where: { id: req.params.id as string },
+      data: { isActive: false },
     });
 
-    res.json({ message: 'Vehicle deleted.' });
+    await prisma.auditLog.create({
+      data: {
+        userId: req.user!.id,
+        action: 'DELETE',
+        entity: 'Vehicle',
+        entityId: req.params.id as string,
+        details: JSON.stringify({ vehicleNumber: vehicle.vehicleNumber, status: 'DEACTIVATED' }),
+      },
+    });
+
+    res.json({ message: 'Vehicle marked inactive.' });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete vehicle.' });
   }

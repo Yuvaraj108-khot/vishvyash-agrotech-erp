@@ -332,16 +332,16 @@ export default function VehiclesPage() {
               {/* History Table */}
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Delivered Invoice Registers</span>
-                <div className="border rounded-xl overflow-hidden bg-card">
-                  <table className="w-full text-left border-collapse">
+                <div className="border rounded-xl overflow-hidden bg-card overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[600px] text-xs">
                     <thead>
                       <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
-                        <th className="p-2.5">Invoice No</th>
-                        <th className="p-2.5">Date</th>
-                        <th className="p-2.5">Client Account</th>
-                        <th className="p-2.5 text-right">Quantity (MT)</th>
-                        <th className="p-2.5 text-right">Trip Sales Value</th>
-                        <th className="p-2.5 text-center">Status</th>
+                        <th className="px-3 py-2.5 min-w-[100px]">Invoice No</th>
+                        <th className="px-3 py-2.5 min-w-[90px]">Date</th>
+                        <th className="px-3 py-2.5 min-w-[150px]">Client Account</th>
+                        <th className="px-3 py-2.5 text-right min-w-[100px]">Quantity (MT)</th>
+                        <th className="px-3 py-2.5 text-right min-w-[100px]">Trip Sales Value</th>
+                        <th className="px-3 py-2.5 text-center min-w-[80px]">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -350,12 +350,12 @@ export default function VehiclesPage() {
                           const qty = inv.items?.reduce((s: number, i: any) => s + i.quantity, 0) || 0;
                           return (
                             <tr key={inv.id} className="hover:bg-muted/10">
-                              <td className="p-2.5 font-semibold font-mono text-foreground">{inv.invoiceNumber}</td>
-                              <td className="p-2.5">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
-                              <td className="p-2.5 font-medium">{inv.client?.name || inv.buyerName}</td>
-                              <td className="p-2.5 text-right font-medium">{qty.toFixed(3)} MT</td>
-                              <td className="p-2.5 text-right font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN')}</td>
-                              <td className="p-2.5 text-center">
+                              <td className="px-3 py-2.5 font-semibold font-mono text-foreground">{inv.invoiceNumber}</td>
+                              <td className="px-3 py-2.5">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
+                              <td className="px-3 py-2.5 font-medium">{inv.client?.name || inv.buyerName}</td>
+                              <td className="px-3 py-2.5 text-right font-medium">{qty.toFixed(3)} MT</td>
+                              <td className="px-3 py-2.5 text-right font-bold text-foreground">₹{inv.grandTotal.toLocaleString('en-IN')}</td>
+                              <td className="px-3 py-2.5 text-center">
                                 <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${
                                   inv.status === 'FINAL' ? 'bg-emerald-500/10 text-emerald-700' : inv.status === 'DRAFT' ? 'bg-blue-500/10 text-blue-700' : 'bg-rose-500/10 text-rose-700'
                                 }`}>
@@ -367,7 +367,7 @@ export default function VehiclesPage() {
                         })
                       ) : (
                         <tr>
-                          <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                          <td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">
                             No delivery register logs matching this vehicle number.
                           </td>
                         </tr>

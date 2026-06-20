@@ -26,7 +26,12 @@ const adminItems = [
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const { user, logout, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -42,24 +47,41 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={cn(
-          'flex flex-col border-r bg-card transition-all duration-300 ease-in-out',
-          sidebarOpen ? 'w-64' : 'w-16'
+          'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-card transition-all duration-300 ease-in-out lg:static lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          sidebarOpen ? 'w-64' : 'w-64 lg:w-16'
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b px-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 p-1 overflow-hidden">
-            <img src="/logo.png" alt="Logo" className="h-full w-full object-contain drop-shadow-sm" />
-          </div>
-          {sidebarOpen && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-bold text-foreground truncate">VISHVYASH</span>
-              <span className="text-[10px] text-muted-foreground truncate">Agrotech Energy</span>
+        <div className="flex h-16 items-center justify-between border-b px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 p-1 overflow-hidden">
+              <img src="/logo.png" alt="Logo" className="h-full w-full object-contain drop-shadow-sm" />
             </div>
-          )}
+            {(sidebarOpen || window.innerWidth < 1024) && (
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-bold text-foreground truncate">VISHVYASH</span>
+                <span className="text-[10px] text-muted-foreground truncate">Agrotech Energy</span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden rounded-md p-1 hover:bg-accent text-muted-foreground"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -132,9 +154,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         {/* Header */}
-        <header className="flex h-16 items-center gap-4 border-b bg-card px-6">
+        <header className="flex h-16 items-center gap-2 sm:gap-4 border-b bg-card px-4 sm:px-6">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="lg:hidden rounded-md p-2 hover:bg-accent"
@@ -143,7 +165,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </button>
 
           {/* Search */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md">
+          <form onSubmit={handleSearch} className="hidden sm:block flex-1 max-w-md">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -178,7 +200,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
       </div>
