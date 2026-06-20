@@ -155,7 +155,7 @@ export default function AuditPage() {
       ) : (
         <Card className="shadow-sm border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-xs min-w-[850px]">
               <thead>
                 <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                   <th className="p-3">Timestamp</th>

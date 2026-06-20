@@ -289,7 +289,7 @@ export default function ReportsPage() {
             <CardTitle className="text-sm font-bold flex items-center gap-1.5"><BarChart2 className="h-4 w-4 text-primary" /> Client Transaction Ledger</CardTitle>
           </CardHeader>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-xs min-w-[600px]">
               <thead>
                 <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                   <th className="p-3">Client Account</th>
@@ -327,7 +327,7 @@ export default function ReportsPage() {
           <CardTitle className="text-sm font-bold flex items-center gap-1.5"><FileText className="h-4 w-4 text-primary" /> Detailed Invoices Log</CardTitle>
         </CardHeader>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead>
               <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                 <th className="p-3">Invoice No</th>

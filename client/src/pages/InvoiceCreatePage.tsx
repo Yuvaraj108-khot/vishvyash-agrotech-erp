@@ -370,10 +370,9 @@ export default function InvoiceCreatePage() {
                 </div>
               </div>
 
-              {/* Template Type selection */}
               <div className="space-y-2 border-t pt-3">
                 <Label className="font-semibold text-foreground">Invoice Layout Template</Label>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 mt-1.5">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 mt-1.5">
                   <label className="flex items-center gap-2 cursor-pointer font-medium text-foreground">
                     <input
                       type="radio"
@@ -711,7 +710,7 @@ export default function InvoiceCreatePage() {
               </div>
 
               {/* Double buttons save actions */}
-              <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-2">
                 <Button
                   type="button"
                   variant="outline"

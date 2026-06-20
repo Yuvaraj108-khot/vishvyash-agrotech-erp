@@ -307,8 +307,8 @@ export default function ClientsPage() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4 py-2 text-xs">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5 col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5 col-span-1 md:col-span-2">
                 <Label htmlFor="name">Company Name *</Label>
                 <Input
                   id="name"
@@ -340,7 +340,7 @@ export default function ClientsPage() {
                 />
               </div>
 
-              <div className="space-y-1.5 col-span-2">
+              <div className="space-y-1.5 col-span-1 md:col-span-2">
                 <Label htmlFor="address">Billing Address *</Label>
                 <Input
                   id="address"
@@ -444,7 +444,7 @@ export default function ClientsPage() {
           ) : (
             <div className="space-y-6">
               {/* Aggregates Dashboard Cards */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="shadow-sm border-emerald-100 bg-emerald-500/5 p-4 flex items-center justify-between">
                   <div>
                     <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Total Quantity Purchased</span>

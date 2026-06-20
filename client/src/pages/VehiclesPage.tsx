@@ -310,7 +310,7 @@ export default function VehiclesPage() {
           ) : (
             <div className="space-y-6">
               {/* Aggregates Dashboard Cards */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="shadow-sm border-emerald-100 bg-emerald-500/5 p-4 flex items-center justify-between">
                   <div>
                     <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Total Tonnage Delivered</span>

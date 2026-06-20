@@ -279,7 +279,7 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-1.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1.5">
                 <div className="space-y-1.5">
                   <Label htmlFor="usr-role">System Role</Label>
                   <select

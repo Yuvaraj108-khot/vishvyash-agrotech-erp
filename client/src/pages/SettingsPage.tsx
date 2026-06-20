@@ -389,8 +389,8 @@ export default function SettingsPage() {
                   Create a full system snapshot. Each backup compiles the PostgreSQL database records (exported as data.json) and all generated invoice PDF files into a single zip file.
                 </p>
 
-                <div className="border rounded-xl overflow-hidden mt-4">
-                  <table className="w-full text-left border-collapse text-xs">
+                <div className="border rounded-xl overflow-hidden mt-4 overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs min-w-[500px]">
                     <thead>
                       <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                         <th className="p-3">Creation Date</th>

@@ -343,7 +343,7 @@ export default function InvoicesPage() {
           {/* Desktop Table View */}
           <Card className="hidden md:block shadow-sm border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-xs min-w-[850px]">
                 <thead>
                   <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                     <th className="px-4 py-3 min-w-[120px]">Invoice No</th>
@@ -618,16 +618,17 @@ export default function InvoicesPage() {
               {/* Line Items Table */}
               <div>
                 <span className="text-[9px] text-muted-foreground block font-bold uppercase mb-2">Billing Line Items</span>
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b bg-muted/40 text-left font-semibold text-muted-foreground">
-                      <th className="p-2">Description</th>
-                      <th className="p-2 text-center" style={{ width: '80px' }}>HSN</th>
-                      <th className="p-2 text-right" style={{ width: '95px' }}>Quantity</th>
-                      <th className="p-2 text-right" style={{ width: '100px' }}>Rate / Ton</th>
-                      <th className="p-2 text-right" style={{ width: '110px' }}>Subtotal</th>
-                    </tr>
-                  </thead>
+                <div className="overflow-x-auto border rounded-lg">
+                  <table className="w-full border-collapse min-w-[500px] text-xs">
+                    <thead>
+                      <tr className="border-b bg-muted/40 text-left font-semibold text-muted-foreground">
+                        <th className="p-2">Description</th>
+                        <th className="p-2 text-center" style={{ width: '80px' }}>HSN</th>
+                        <th className="p-2 text-right" style={{ width: '95px' }}>Quantity</th>
+                        <th className="p-2 text-right" style={{ width: '100px' }}>Rate / Ton</th>
+                        <th className="p-2 text-right" style={{ width: '110px' }}>Subtotal</th>
+                      </tr>
+                    </thead>
                   <tbody className="divide-y">
                     {selectedDetails.items.map((item: any) => (
                       <tr key={item.id}>
@@ -639,11 +640,12 @@ export default function InvoicesPage() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
 
               {/* Totals Summary */}
-              <div className="grid grid-cols-2 gap-4 border-t pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
                 <div className="space-y-2">
                   {selectedDetails.notes && (
                     <>

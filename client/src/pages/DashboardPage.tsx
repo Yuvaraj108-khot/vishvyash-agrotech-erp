@@ -257,7 +257,7 @@ export default function DashboardPage() {
 
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-xs min-w-[500px]">
               <thead>
                 <tr className="border-b text-muted-foreground font-semibold">
                   <th className="px-3 py-2 min-w-[90px]">Inv No.</th>

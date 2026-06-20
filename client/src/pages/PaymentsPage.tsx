@@ -286,7 +286,7 @@ export default function PaymentsPage() {
           {/* Desktop Table View */}
           <Card className="hidden md:block shadow-sm border-border bg-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-xs min-w-[850px]">
                 <thead>
                   <tr className="border-b bg-muted/40 text-muted-foreground font-semibold">
                     <th className="px-4 py-3 min-w-[100px]">Receipt Date</th>
@@ -502,7 +502,7 @@ export default function PaymentsPage() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="pay-amount">Amount Received (INR) *</Label>
                   <Input
@@ -559,7 +559,7 @@ export default function PaymentsPage() {
               )}
 
               {paymentMode === 'CHEQUE' && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="cheque">Cheque Number</Label>
                     <Input
