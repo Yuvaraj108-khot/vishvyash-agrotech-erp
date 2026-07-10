@@ -1,88 +1,181 @@
-# vishvyash-agrotech-erp
-Enterprise-grade Invoice, Client, Driver, Vehicle and GST Management System for Vishvyash Agrotech Energy. Built with Electron, React, Node.js, SQLite and Prisma.
+# 🚛 Vishvyash Agrotech Energy ERP
 
-# Vishvyash Agrotech Energy ERP
+An enterprise-grade ERP solution developed for **Vishvyash Agrotech Energy** to simplify and automate day-to-day business operations. The system provides GST-compliant invoicing, client and vehicle management, payment tracking, reporting, and secure user management through a modern desktop application.
 
-A complete desktop ERP solution for Vishvyash Agrotech Energy.
+---
 
-## Features
+## 🌐 Live Demo
 
-- Secure Login System
-- Role Based Access
-- GST Invoice Generation
-- PDF Export
-- Client Management
-- Driver Management
-- Vehicle Management
-- Payment Tracking
-- Client Ledger
-- Sales Analytics
-- Reports Dashboard
-- Database Backup & Restore
-- OTP Based Password Reset
-- Audit Logs
+**Website:** https://vishvyash-agrotech-erp.onrender.com/
 
-## Tech Stack
+---
 
-Frontend
-- React
-- Tailwind CSS
+## ✨ Features
 
-Backend
-- Node.js
-- Express.js
+### 🔐 Authentication & Security
 
-Desktop
-- Electron.js
+* Secure Login System
+* JWT Authentication
+* Role-Based Access Control
+* OTP-Based Password Reset
+* Password Encryption using Bcrypt
+* Audit Logs
 
-Database
-- SQLite
-- Prisma ORM
+### 🧾 GST Invoice Management
 
-Authentication
-- JWT
-- Bcrypt
+* GST-Compliant Invoice Generation
+* Automatic Tax Calculation
+* PDF Invoice Export
+* Invoice Search & History
+* Print Support
 
-Email Service
-- Nodemailer
+### 👥 Client Management
 
-Reports
-- PDF Export
-- Excel Export
+* Add, Edit & Delete Clients
+* Client Ledger
+* Outstanding Balance Tracking
+* Transaction History
 
-## Installation
+### 🚚 Driver Management
+
+* Driver Registration
+* Driver Details & Contact Information
+* Driver Assignment
+
+### 🚛 Vehicle Management
+
+* Vehicle Registration
+* Vehicle Information Management
+* Driver Allocation
+* Vehicle Status Tracking
+
+### 💰 Payment Tracking
+
+* Record Customer Payments
+* Payment History
+* Pending Payment Monitoring
+* Balance Calculation
+
+### 📊 Reports & Analytics
+
+* Sales Dashboard
+* Business Analytics
+* Invoice Reports
+* Client Reports
+* Excel Export
+* PDF Export
+
+### 💾 Database Utilities
+
+* Database Backup & Restore
+* Secure Local Storage
+* Data Integrity
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+* React
+* Tailwind CSS
+* JavaScript
+
+### Backend
+
+* Node.js
+* Express.js
+
+### Desktop
+
+* Electron.js
+
+### Database
+
+* SQLite
+* Prisma ORM
+
+### Authentication
+
+* JWT
+* Bcrypt
+
+### Email Service
+
+* Nodemailer
+
+### Reporting
+
+* PDF Export
+* Excel Export
+
+---
+
+## 📂 Modules
+
+* 📊 Dashboard
+* 🧾 Invoice Management
+* 👥 Client Management
+* 🚚 Driver Management
+* 🚛 Vehicle Management
+* 💰 Payment Tracking
+* 📑 Reports & Analytics
+* 👤 User Management
+* 🔐 Authentication
+* 💾 Database Backup & Restore
+
+---
+
+## 🚀 Installation
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/vishvyash-agrotech-erp.git
+```
 
+Navigate to the project folder:
+
+```bash
 cd vishvyash-agrotech-erp
+```
 
+Install dependencies:
+
+```bash
 npm install
 ```
 
-Start Development
+Run the application in development mode:
 
 ```bash
 npm run dev
 ```
 
-Build Desktop Application
+Build the desktop application:
 
 ```bash
 npm run build
 ```
 
-## Modules
+---
 
-- Dashboard
-- Invoice Management
-- Client Management
-- Driver Management
-- Vehicle Management
-- Payment Tracking
-- Reports
-- User Management
+## 🎯 Purpose
 
-## License
+The ERP was built to digitize and streamline the business operations of **Vishvyash Agrotech Energy** by replacing manual processes with an efficient, secure, and user-friendly management system.
 
-Private Commercial Project
+---
+
+## 📄 License
+
+**Private Commercial Project**
+
+This software is developed exclusively for **Vishvyash Agrotech Energy**. Unauthorized copying, modification, distribution, or commercial use is prohibited.
+
+---
+
+## 👨‍💻 Developer
+
+**Yuvaraj Khot**
+
+Building scalable software solutions that solve real-world business challenges.
